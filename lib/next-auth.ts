@@ -6,6 +6,7 @@ import User from "@/models/User";
 import { verifyPassword } from "@/lib/auth";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,

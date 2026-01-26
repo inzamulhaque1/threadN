@@ -198,7 +198,7 @@ export default function AdminSettingsPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">
-              Hooks Temperature ({getValue("ai_temperature_hooks")})
+              Hooks Temperature ({String(getValue("ai_temperature_hooks"))})
             </label>
             <input
               type="range"
@@ -216,7 +216,7 @@ export default function AdminSettingsPage() {
           </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1">
-              Threads Temperature ({getValue("ai_temperature_threads")})
+              Threads Temperature ({String(getValue("ai_temperature_threads"))})
             </label>
             <input
               type="range"

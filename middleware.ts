@@ -5,10 +5,13 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Get token
+  // Get token - must use same secret and cookie name as NextAuth
   const token = await getToken({
     req: request,
-    secret: process.env.JWT_SECRET,
+    secret: process.env.AUTH_SECRET || process.env.JWT_SECRET,
+    cookieName: process.env.NODE_ENV === "production"
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token",
   });
 
   // Protected routes

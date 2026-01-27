@@ -1029,9 +1029,13 @@ export default function TemplatesPage() {
         <Button
           onClick={handleExport}
           isLoading={isExporting}
-          className={exportSuccess ? "bg-green-600 hover:bg-green-700" : ""}
+          size="lg"
+          className={exportSuccess
+            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
+            : "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
+          }
         >
-          {exportSuccess ? <><Check className="w-4 h-4" /> Downloaded!</> : <><Download className="w-4 h-4" /> Download PNG</>}
+          {exportSuccess ? <><Check className="w-5 h-5" /> Downloaded!</> : <><Download className="w-5 h-5" /> Download PNG</>}
         </Button>
       </div>
 

@@ -432,6 +432,9 @@ interface Decoration {
 interface RecentHook {
   _id: string;
   text: string;
+  score?: number;
+  reason?: string;
+  evidence?: string[];
   createdAt: string;
 }
 
@@ -503,6 +506,7 @@ export default function TemplatesPage() {
   const [loadingHooks, setLoadingHooks] = useState(false);
   const [showRecentHooks, setShowRecentHooks] = useState(true);
   const [copiedHookId, setCopiedHookId] = useState<string | null>(null);
+  const [selectedHook, setSelectedHook] = useState<RecentHook | null>(null);
 
   // Export
   const [isExporting, setIsExporting] = useState(false);
@@ -524,7 +528,7 @@ export default function TemplatesPage() {
     try {
       const result = await userApi.history(1, 10, "hooks");
       if (result.success && result.data) {
-        const data = result.data as { generations: Array<{ _id: string; output: { hooks: Array<{ text: string }> }; createdAt: string }> };
+        const data = result.data as { generations: Array<{ _id: string; output: { hooks: Array<{ text: string; score?: number; reason?: string; evidence?: string[] }> }; createdAt: string }> };
         const hooks: RecentHook[] = [];
         data.generations.forEach((gen) => {
           if (gen.output?.hooks) {
@@ -532,12 +536,15 @@ export default function TemplatesPage() {
               hooks.push({
                 _id: `${gen._id}-${index}`,
                 text: hook.text,
+                score: hook.score,
+                reason: hook.reason,
+                evidence: hook.evidence,
                 createdAt: gen.createdAt,
               });
             });
           }
         });
-        setRecentHooks(hooks.slice(0, 15));
+        setRecentHooks(hooks.slice(0, 20));
       }
     } catch (err) {
       console.error("Failed to fetch hooks:", err);
@@ -545,11 +552,12 @@ export default function TemplatesPage() {
     setLoadingHooks(false);
   };
 
-  const handleUseHook = (text: string, id: string) => {
+  const handleUseHook = (hook: RecentHook) => {
     setElements((prev) =>
-      prev.map((el) => (el.id === "hook-text" ? { ...el, content: text } : el))
+      prev.map((el) => (el.id === "hook-text" ? { ...el, content: hook.text } : el))
     );
-    setCopiedHookId(id);
+    setSelectedHook(hook);
+    setCopiedHookId(hook._id);
     setTimeout(() => setCopiedHookId(null), 2000);
   };
 
@@ -1065,7 +1073,7 @@ export default function TemplatesPage() {
                     <div
                       key={hook._id}
                       className="group p-3 bg-white/5 rounded-lg hover:bg-white/10 cursor-pointer"
-                      onClick={() => handleUseHook(hook.text, hook._id)}
+                      onClick={() => handleUseHook(hook)}
                     >
                       <p className="text-sm text-gray-300 line-clamp-2">{hook.text}</p>
                       <div className="flex items-center justify-between mt-2">
@@ -1557,6 +1565,60 @@ export default function TemplatesPage() {
             <div className="mt-4 p-3 bg-white/5 rounded-lg">
               <p className="text-xs text-gray-400"><strong>Click</strong> select • <strong>Drag</strong> move • <strong>Corners</strong> resize</p>
             </div>
+
+            {/* Selected Hook Details */}
+            {selectedHook && (
+              <div className="mt-4 p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
+                <h4 className="font-semibold text-purple-400 mb-3 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Hook Details
+                </h4>
+
+                <div className="space-y-3">
+                  {/* Score */}
+                  {selectedHook.score !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400">Score:</span>
+                      <div className="flex-1 bg-white/10 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
+                          style={{ width: `${selectedHook.score}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-purple-400">{selectedHook.score}%</span>
+                    </div>
+                  )}
+
+                  {/* Reason */}
+                  {selectedHook.reason && (
+                    <div>
+                      <span className="text-xs text-gray-400 block mb-1">Why it works:</span>
+                      <p className="text-sm text-gray-300 bg-white/5 rounded-lg p-2">{selectedHook.reason}</p>
+                    </div>
+                  )}
+
+                  {/* Evidence */}
+                  {selectedHook.evidence && selectedHook.evidence.length > 0 && (
+                    <div>
+                      <span className="text-xs text-gray-400 block mb-1">Evidence:</span>
+                      <ul className="space-y-1">
+                        {selectedHook.evidence.map((ev, i) => (
+                          <li key={i} className="text-xs text-gray-400 bg-white/5 rounded px-2 py-1 flex items-start gap-2">
+                            <Check className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                            {ev}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Date */}
+                  <div className="text-xs text-gray-500 pt-2 border-t border-white/10">
+                    Generated: {new Date(selectedHook.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
       </div>

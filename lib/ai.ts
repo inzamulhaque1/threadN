@@ -224,9 +224,11 @@ async function extractYouTubeTranscript(url: string): Promise<ExtractUrlResult> 
 
   let errorDetails = "";
 
-  // Method 1: Using youtubei.js
+  // Method 1: Using youtubei.js (works best locally)
   try {
-    const youtube = await Innertube.create();
+    const youtube = await Innertube.create({
+      generate_session_locally: true,
+    });
     const info = await youtube.getInfo(videoId);
     const transcriptData = await info.getTranscript();
 
@@ -240,44 +242,147 @@ async function extractYouTubeTranscript(url: string): Promise<ExtractUrlResult> 
         .trim();
 
       if (text.length > 50) {
+        console.log("[YouTube] Method 1 success: youtubei.js");
         return { content: text.slice(0, 8000), tokens: 0 };
       }
     }
     errorDetails += "Method 1: No transcript segments found. ";
   } catch (err) {
+    console.error("[YouTube] Method 1 failed:", err);
     errorDetails += `Method 1 failed: ${err instanceof Error ? err.message : "Unknown error"}. `;
   }
 
-  // Method 2: Direct fetch from YouTube page
+  // Method 2: Direct caption track fetch (more reliable on servers)
   try {
     const transcript = await fetchYouTubeTranscriptDirect(videoId);
     if (transcript && transcript.length > 50) {
+      console.log("[YouTube] Method 2 success: direct fetch");
       return { content: transcript.slice(0, 8000), tokens: 0 };
     }
     errorDetails += "Method 2: Transcript too short or empty. ";
   } catch (err) {
+    console.error("[YouTube] Method 2 failed:", err);
     errorDetails += `Method 2 failed: ${err instanceof Error ? err.message : "Unknown error"}. `;
   }
 
-  // Method 3: Try fetching video description as fallback
+  // Method 3: Try timedtext API directly
   try {
-    const youtube = await Innertube.create();
+    const transcript = await fetchTimedTextAPI(videoId);
+    if (transcript && transcript.length > 50) {
+      console.log("[YouTube] Method 3 success: timedtext API");
+      return { content: transcript.slice(0, 8000), tokens: 0 };
+    }
+    errorDetails += "Method 3: Timedtext API failed. ";
+  } catch (err) {
+    console.error("[YouTube] Method 3 failed:", err);
+    errorDetails += `Method 3 failed: ${err instanceof Error ? err.message : "Unknown error"}. `;
+  }
+
+  // Method 4: Try fetching video description as last resort
+  try {
+    const youtube = await Innertube.create({
+      generate_session_locally: true,
+    });
     const info = await youtube.getBasicInfo(videoId);
     const description = info.basic_info?.short_description || "";
     const title = info.basic_info?.title || "";
 
     if (description.length > 100) {
+      console.log("[YouTube] Method 4 success: description fallback");
       return {
         content: `Title: ${title}\n\nDescription: ${description}`.slice(0, 8000),
         tokens: 0,
       };
     }
-    errorDetails += "Method 3: Description too short. ";
+    errorDetails += "Method 4: Description too short. ";
   } catch (err) {
-    errorDetails += `Method 3 failed: ${err instanceof Error ? err.message : "Unknown error"}. `;
+    console.error("[YouTube] Method 4 failed:", err);
+    errorDetails += `Method 4 failed: ${err instanceof Error ? err.message : "Unknown error"}. `;
+  }
+
+  // Method 5: Use oEmbed for basic info
+  try {
+    const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+    const response = await fetch(oembedUrl);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.title) {
+        console.log("[YouTube] Method 5: oEmbed fallback (title only)");
+        return {
+          content: `Video Title: ${data.title}\nAuthor: ${data.author_name || "Unknown"}\n\nNote: Full transcript not available. Please paste the transcript manually or try a different video.`,
+          tokens: 0,
+        };
+      }
+    }
+  } catch (err) {
+    console.error("[YouTube] Method 5 failed:", err);
+    errorDetails += `Method 5 failed: ${err instanceof Error ? err.message : "Unknown error"}. `;
   }
 
   throw new Error(`TRANSCRIPT_FAILED: Could not extract content. Details: ${errorDetails}`);
+}
+
+// Fetch transcript using YouTube's timedtext API
+async function fetchTimedTextAPI(videoId: string): Promise<string> {
+  // First get the page to find caption tracks
+  const pageResponse = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.5",
+      "Accept-Encoding": "gzip, deflate",
+      "Connection": "keep-alive",
+    },
+  });
+
+  if (!pageResponse.ok) {
+    throw new Error(`Failed to fetch page: ${pageResponse.status}`);
+  }
+
+  const html = await pageResponse.text();
+
+  // Find the captionTracks in ytInitialPlayerResponse
+  const playerResponseMatch = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/);
+  if (!playerResponseMatch) {
+    throw new Error("Could not find player response");
+  }
+
+  try {
+    const playerResponse = JSON.parse(playerResponseMatch[1]);
+    const captionTracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+
+    if (!captionTracks || captionTracks.length === 0) {
+      throw new Error("No caption tracks available");
+    }
+
+    // Find English track or use first available
+    const track = captionTracks.find((t: { languageCode?: string }) =>
+      t.languageCode === "en" || t.languageCode?.startsWith("en")
+    ) || captionTracks[0];
+
+    if (!track?.baseUrl) {
+      throw new Error("No caption URL found");
+    }
+
+    // Fetch the caption XML
+    const captionResponse = await fetch(track.baseUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
+    });
+
+    if (!captionResponse.ok) {
+      throw new Error(`Failed to fetch captions: ${captionResponse.status}`);
+    }
+
+    const xml = await captionResponse.text();
+    return parseTranscriptXml(xml);
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      throw new Error("Failed to parse player response");
+    }
+    throw err;
+  }
 }
 
 // Direct fetch method for YouTube transcript

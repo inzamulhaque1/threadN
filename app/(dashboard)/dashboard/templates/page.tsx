@@ -507,6 +507,12 @@ export default function TemplatesPage() {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [selectedThread, setSelectedThread] = useState<RecentThread | null>(null);
 
+  // Collapsible sections
+  const [showTemplates, setShowTemplates] = useState(true);
+  const [showSize, setShowSize] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [showBackground, setShowBackground] = useState(false);
+
   // Export
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
@@ -1092,13 +1098,18 @@ export default function TemplatesPage() {
 
           {/* Templates */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Palette className="w-4 h-4 text-purple-400" />
-              Design Templates
-            </h3>
+            <button onClick={() => setShowTemplates(!showTemplates)} className="w-full flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Palette className="w-4 h-4 text-purple-400" />
+                Design Templates
+              </h3>
+              {showTemplates ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
 
+            {showTemplates && (
+            <>
             {/* Category Tabs */}
-            <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
+            <div className="flex gap-1 mt-3 mb-3 overflow-x-auto pb-1">
               {TEMPLATE_CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
@@ -1291,15 +1302,21 @@ export default function TemplatesPage() {
               ))}
             </div>
             <p className="text-xs text-gray-500 mt-2 text-center">{selectedTemplate.name}</p>
+            </>
+            )}
           </Card>
 
           {/* Size */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Move className="w-4 h-4 text-cyan-400" />
-              Card Size
-            </h3>
-            <div className="flex flex-wrap gap-2">
+            <button onClick={() => setShowSize(!showSize)} className="w-full flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Move className="w-4 h-4 text-cyan-400" />
+                Card Size
+              </h3>
+              {showSize ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            {showSize && (
+            <div className="flex flex-wrap gap-2 mt-3">
               {CARD_SIZES.map((size) => (
                 <button
                   key={size.id}
@@ -1312,6 +1329,7 @@ export default function TemplatesPage() {
                 </button>
               ))}
             </div>
+            )}
           </Card>
 
           {/* Selected Element */}
@@ -1421,20 +1439,32 @@ export default function TemplatesPage() {
 
           {/* Add Elements */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2"><Plus className="w-4 h-4 text-blue-400" /> Add</h3>
+            <button onClick={() => setShowAdd(!showAdd)} className="w-full flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2"><Plus className="w-4 h-4 text-blue-400" /> Add Elements</h3>
+              {showAdd ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            {showAdd && (
+            <>
             <input ref={contentImageInputRef} type="file" accept="image/*" onChange={handleContentImageUpload} className="hidden" />
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-3">
               <Button variant="glass" onClick={() => contentImageInputRef.current?.click()} className="flex-1"><ImageIcon className="w-4 h-4" /> Image</Button>
               <Button variant="glass" onClick={() => { const t: CanvasElement = { id: `text-${Date.now()}`, type: "text", x: 200, y: 400, width: 680, height: 100, content: "New text", fontSize: 40, fontWeight: "600", textAlign: "center", color: textColor }; setElements((p) => [...p, t]); setSelectedId(t.id); }} className="flex-1"><Type className="w-4 h-4" /> Text</Button>
             </div>
+            </>
+            )}
           </Card>
 
           {/* Background */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2"><RectangleHorizontal className="w-4 h-4 text-blue-400" /> Background</h3>
+            <button onClick={() => setShowBackground(!showBackground)} className="w-full flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2"><RectangleHorizontal className="w-4 h-4 text-blue-400" /> Background</h3>
+              {showBackground ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            {showBackground && (
+            <>
             <input ref={bgImageInputRef} type="file" accept="image/*" onChange={handleBgImageUpload} className="hidden" />
             {bgImage ? (
-              <div className="space-y-3">
+              <div className="space-y-3 mt-3">
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-white/5">
                   <img src={bgImage} alt="" className="w-full h-full object-cover" />
                   <button onClick={() => setBgImage(null)} className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/80 hover:bg-red-500"><Trash2 className="w-4 h-4 text-white" /></button>
@@ -1445,7 +1475,9 @@ export default function TemplatesPage() {
                 </div>
               </div>
             ) : (
-              <Button variant="glass" onClick={() => bgImageInputRef.current?.click()} className="w-full"><Upload className="w-4 h-4" /> Upload</Button>
+              <Button variant="glass" onClick={() => bgImageInputRef.current?.click()} className="w-full mt-3"><Upload className="w-4 h-4" /> Upload</Button>
+            )}
+            </>
             )}
           </Card>
 

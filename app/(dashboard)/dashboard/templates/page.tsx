@@ -1,531 +1,686 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
-  FileText,
+  Download,
+  Upload,
+  Type,
+  Palette,
+  Image as ImageIcon,
+  Move,
   Plus,
-  Edit,
+  Minus,
+  RotateCcw,
   Trash2,
-  X,
-  AlertCircle,
-  Play,
-  Globe,
-  Lock,
-  Sparkles,
-  Search,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Bold,
+  Check,
 } from "lucide-react";
 import { Button, Card, Input, Textarea } from "@/components/ui";
-import { templatesApi } from "@/lib/api";
-import type { ITemplate } from "@/types";
+import { toPng } from "html-to-image";
 
-interface TemplateData {
-  _id: string;
-  userId: string | null;
-  name: string;
-  description: string;
-  category: "hook" | "thread" | "full";
-  content: {
-    hookTemplate: string;
-    threadTemplate: string;
-    variables: Array<{ name: string; description: string; defaultValue: string }>;
-  };
-  isPublic: boolean;
-  usageCount: number;
-  createdAt: string;
+// Pre-designed card templates
+const CARD_TEMPLATES = [
+  {
+    id: "minimal",
+    name: "Minimal",
+    preview: "bg-gradient-to-br from-gray-900 to-gray-800",
+    config: {
+      background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+      textColor: "#ffffff",
+      accentColor: "#8b5cf6",
+      fontSize: 24,
+      fontWeight: "600",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+  {
+    id: "vibrant",
+    name: "Vibrant",
+    preview: "bg-gradient-to-br from-purple-600 to-pink-500",
+    config: {
+      background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)",
+      textColor: "#ffffff",
+      accentColor: "#fbbf24",
+      fontSize: 26,
+      fontWeight: "700",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+  {
+    id: "ocean",
+    name: "Ocean",
+    preview: "bg-gradient-to-br from-cyan-500 to-blue-600",
+    config: {
+      background: "linear-gradient(135deg, #06b6d4 0%, #2563eb 100%)",
+      textColor: "#ffffff",
+      accentColor: "#fbbf24",
+      fontSize: 24,
+      fontWeight: "600",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+  {
+    id: "sunset",
+    name: "Sunset",
+    preview: "bg-gradient-to-br from-orange-500 to-red-600",
+    config: {
+      background: "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
+      textColor: "#ffffff",
+      accentColor: "#fef3c7",
+      fontSize: 24,
+      fontWeight: "600",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+  {
+    id: "forest",
+    name: "Forest",
+    preview: "bg-gradient-to-br from-green-600 to-emerald-700",
+    config: {
+      background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+      textColor: "#ffffff",
+      accentColor: "#fbbf24",
+      fontSize: 24,
+      fontWeight: "600",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+  {
+    id: "dark",
+    name: "Dark Pro",
+    preview: "bg-gradient-to-br from-zinc-900 to-neutral-900",
+    config: {
+      background: "linear-gradient(135deg, #18181b 0%, #0a0a0a 100%)",
+      textColor: "#ffffff",
+      accentColor: "#22d3ee",
+      fontSize: 24,
+      fontWeight: "500",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+  {
+    id: "light",
+    name: "Light Clean",
+    preview: "bg-gradient-to-br from-gray-100 to-white",
+    config: {
+      background: "linear-gradient(135deg, #f3f4f6 0%, #ffffff 100%)",
+      textColor: "#111827",
+      accentColor: "#8b5cf6",
+      fontSize: 24,
+      fontWeight: "600",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+  {
+    id: "neon",
+    name: "Neon",
+    preview: "bg-black",
+    config: {
+      background: "#000000",
+      textColor: "#00ff88",
+      accentColor: "#ff00ff",
+      fontSize: 26,
+      fontWeight: "700",
+      textAlign: "center" as const,
+      padding: 40,
+    },
+  },
+];
+
+const CARD_SIZES = [
+  { id: "square", name: "Square (1:1)", width: 1080, height: 1080 },
+  { id: "portrait", name: "Portrait (4:5)", width: 1080, height: 1350 },
+  { id: "story", name: "Story (9:16)", width: 1080, height: 1920 },
+  { id: "landscape", name: "Landscape (16:9)", width: 1920, height: 1080 },
+  { id: "twitter", name: "Twitter (16:9)", width: 1200, height: 675 },
+];
+
+interface CardConfig {
+  background: string;
+  textColor: string;
+  accentColor: string;
+  fontSize: number;
+  fontWeight: string;
+  textAlign: "left" | "center" | "right";
+  padding: number;
 }
 
 export default function TemplatesPage() {
-  const [templates, setTemplates] = useState<TemplateData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showUseModal, setShowUseModal] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<TemplateData | null>(null);
-  const [usingTemplate, setUsingTemplate] = useState<TemplateData | null>(null);
-  const [viewType, setViewType] = useState<"my" | "public" | "all">("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const cardRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form state
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
-  const [formCategory, setFormCategory] = useState<"hook" | "thread" | "full">("hook");
-  const [formHookTemplate, setFormHookTemplate] = useState("");
-  const [formThreadTemplate, setFormThreadTemplate] = useState("");
-  const [formVariables, setFormVariables] = useState<Array<{ name: string; description: string; defaultValue: string }>>([]);
-  const [formIsPublic, setFormIsPublic] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Card content state
+  const [hookText, setHookText] = useState("Your viral hook goes here.\n\nMake it impactful!");
+  const [authorName, setAuthorName] = useState("@yourhandle");
+  const [showAuthor, setShowAuthor] = useState(true);
 
-  // Use template form state
-  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
-  const [generatedContent, setGeneratedContent] = useState<{ hook: string; thread: string } | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  // Card design state
+  const [selectedTemplate, setSelectedTemplate] = useState(CARD_TEMPLATES[0]);
+  const [selectedSize, setSelectedSize] = useState(CARD_SIZES[0]);
+  const [config, setConfig] = useState<CardConfig>(CARD_TEMPLATES[0].config);
 
-  useEffect(() => {
-    fetchTemplates();
-  }, [viewType, categoryFilter]);
+  // Image state
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [imageOpacity, setImageOpacity] = useState(30);
+  const [imagePosition, setImagePosition] = useState<"cover" | "contain" | "top" | "bottom">("cover");
 
-  const fetchTemplates = async () => {
-    setIsLoading(true);
-    const result = await templatesApi.list(categoryFilter || undefined, viewType);
-    if (result.success && result.data) {
-      setTemplates((result.data as { templates: TemplateData[] }).templates || []);
-    } else {
-      setError(result.error || "Failed to fetch templates");
-    }
-    setIsLoading(false);
+  // Export state
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
+
+  const handleTemplateSelect = (template: typeof CARD_TEMPLATES[0]) => {
+    setSelectedTemplate(template);
+    setConfig(template.config);
   };
 
-  const handleCreateOrUpdate = async () => {
-    if (!formName.trim()) {
-      setError("Please enter a template name");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError(null);
-
-    const data = {
-      name: formName,
-      description: formDescription,
-      category: formCategory,
-      content: {
-        hookTemplate: formHookTemplate,
-        threadTemplate: formThreadTemplate,
-        variables: formVariables,
-      },
-      isPublic: formIsPublic,
-    };
-
-    let result;
-    if (editingTemplate) {
-      result = await templatesApi.update(editingTemplate._id, data);
-    } else {
-      result = await templatesApi.create(data);
-    }
-
-    if (result.success) {
-      setShowCreateModal(false);
-      setEditingTemplate(null);
-      resetForm();
-      fetchTemplates();
-    } else {
-      setError(result.error || "Failed to save template");
-    }
-
-    setIsSubmitting(false);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this template?")) return;
-
-    const result = await templatesApi.delete(id);
-    if (result.success) {
-      fetchTemplates();
-    } else {
-      setError(result.error || "Failed to delete");
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleUseTemplate = async () => {
-    if (!usingTemplate) return;
-
-    setIsGenerating(true);
-    setError(null);
-
-    const result = await templatesApi.use(usingTemplate._id, variableValues);
-    if (result.success && result.data) {
-      const data = result.data as { hook: string; thread: string };
-      setGeneratedContent({ hook: data.hook, thread: data.thread });
-    } else {
-      setError(result.error || "Failed to generate from template");
-    }
-
-    setIsGenerating(false);
-  };
-
-  const openEditModal = (template: TemplateData) => {
-    setEditingTemplate(template);
-    setFormName(template.name);
-    setFormDescription(template.description);
-    setFormCategory(template.category);
-    setFormHookTemplate(template.content.hookTemplate);
-    setFormThreadTemplate(template.content.threadTemplate);
-    setFormVariables(template.content.variables);
-    setFormIsPublic(template.isPublic);
-    setShowCreateModal(true);
-  };
-
-  const openUseModal = (template: TemplateData) => {
-    setUsingTemplate(template);
-    setGeneratedContent(null);
-    const initialValues: Record<string, string> = {};
-    template.content.variables.forEach((v) => {
-      initialValues[v.name] = v.defaultValue || "";
-    });
-    setVariableValues(initialValues);
-    setShowUseModal(true);
-  };
-
-  const resetForm = () => {
-    setFormName("");
-    setFormDescription("");
-    setFormCategory("hook");
-    setFormHookTemplate("");
-    setFormThreadTemplate("");
-    setFormVariables([]);
-    setFormIsPublic(false);
-  };
-
-  const addVariable = () => {
-    setFormVariables([...formVariables, { name: "", description: "", defaultValue: "" }]);
-  };
-
-  const updateVariable = (index: number, field: string, value: string) => {
-    const updated = [...formVariables];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormVariables(updated);
-  };
-
-  const removeVariable = (index: number) => {
-    setFormVariables(formVariables.filter((_, i) => i !== index));
-  };
-
-  const getCategoryBadge = (category: string) => {
-    switch (category) {
-      case "hook":
-        return "bg-purple-500/20 text-purple-400";
-      case "thread":
-        return "bg-cyan-500/20 text-cyan-400";
-      case "full":
-        return "bg-green-500/20 text-green-400";
-      default:
-        return "bg-gray-500/20 text-gray-400";
+  const handleRemoveImage = () => {
+    setUploadedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  const filteredTemplates = templates.filter(
-    (t) => t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           t.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleExport = async () => {
+    if (!cardRef.current) return;
+
+    setIsExporting(true);
+    try {
+      // Create a clone for export with actual pixel dimensions
+      const scale = selectedSize.width / cardRef.current.offsetWidth;
+
+      const dataUrl = await toPng(cardRef.current, {
+        width: selectedSize.width,
+        height: selectedSize.height,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+          width: `${cardRef.current.offsetWidth}px`,
+          height: `${cardRef.current.offsetHeight}px`,
+        },
+        pixelRatio: 1,
+      });
+
+      // Download
+      const link = document.createElement("a");
+      link.download = `social-card-${Date.now()}.png`;
+      link.href = dataUrl;
+      link.click();
+
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 3000);
+    } catch (err) {
+      console.error("Export failed:", err);
+    }
+    setIsExporting(false);
+  };
+
+  const updateConfig = (key: keyof CardConfig, value: string | number) => {
+    setConfig((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Calculate preview dimensions maintaining aspect ratio
+  const previewMaxWidth = 400;
+  const aspectRatio = selectedSize.height / selectedSize.width;
+  const previewWidth = previewMaxWidth;
+  const previewHeight = previewMaxWidth * aspectRatio;
 
   return (
     <div className="h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Templates</h1>
-          <p className="text-gray-400 text-sm">Create and use content templates</p>
+          <h1 className="text-2xl font-bold">Card Designer</h1>
+          <p className="text-gray-400 text-sm">Create stunning social media cards from your hooks</p>
         </div>
-        <Button onClick={() => { resetForm(); setEditingTemplate(null); setShowCreateModal(true); }}>
-          <Plus className="w-4 h-4" />
-          Create Template
+        <Button
+          onClick={handleExport}
+          isLoading={isExporting}
+          className={exportSuccess ? "bg-green-600 hover:bg-green-700" : ""}
+        >
+          {exportSuccess ? (
+            <>
+              <Check className="w-4 h-4" />
+              Downloaded!
+            </>
+          ) : (
+            <>
+              <Download className="w-4 h-4" />
+              Download PNG
+            </>
+          )}
         </Button>
       </div>
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4 flex items-center gap-3">
-          <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-          <p className="text-red-400 text-sm">{error}</p>
-          <button onClick={() => setError(null)} className="ml-auto">
-            <X className="w-4 h-4 text-red-400" />
-          </button>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          {(["all", "my", "public"] as const).map((type) => (
-            <button
-              key={type}
-              onClick={() => setViewType(type)}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                viewType === type
-                  ? "bg-purple-500 text-white"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10"
-              }`}
-            >
-              {type === "all" ? "All" : type === "my" ? "My Templates" : "Community"}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {["", "hook", "thread", "full"].map((cat) => (
-            <button
-              key={cat || "all"}
-              onClick={() => setCategoryFilter(cat)}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                categoryFilter === cat
-                  ? "bg-cyan-500 text-white"
-                  : "bg-white/5 text-gray-400 hover:bg-white/10"
-              }`}
-            >
-              {cat || "All Types"}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-          <Input
-            placeholder="Search templates..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
-
-      {/* Templates Grid */}
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500" />
-        </div>
-      ) : filteredTemplates.length === 0 ? (
-        <Card className="p-8 text-center">
-          <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400">No templates found</p>
-          <p className="text-gray-500 text-sm mt-1">Create your first template to get started</p>
-        </Card>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTemplates.map((template) => (
-            <Card key={template._id} className="p-4 hover:border-purple-500/30 transition-all">
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${getCategoryBadge(template.category)}`}>
-                    {template.category}
-                  </span>
-                  {template.isPublic ? (
-                    <Globe className="w-3 h-3 text-green-400" />
-                  ) : (
-                    <Lock className="w-3 h-3 text-gray-500" />
-                  )}
-                </div>
-                <span className="text-xs text-gray-500">{template.usageCount} uses</span>
-              </div>
-
-              <h3 className="font-semibold text-white mb-1 truncate">{template.name}</h3>
-              <p className="text-sm text-gray-400 line-clamp-2 mb-3">{template.description || "No description"}</p>
-
-              {template.content.variables.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {template.content.variables.map((v) => (
-                    <span
-                      key={v.name}
-                      className="px-2 py-0.5 bg-purple-500/10 text-purple-400 text-xs rounded"
-                    >
-                      {`{{${v.name}}}`}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 pt-3 border-t border-white/5">
-                <Button size="sm" onClick={() => openUseModal(template)} className="flex-1">
-                  <Play className="w-3 h-3" />
-                  Use
-                </Button>
-                {template.userId && (
-                  <>
-                    <Button variant="ghost" size="sm" onClick={() => openEditModal(template)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(template._id)}>
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Create/Edit Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">
-                {editingTemplate ? "Edit Template" : "Create Template"}
-              </h2>
-              <button onClick={() => setShowCreateModal(false)}>
-                <X className="w-5 h-5 text-gray-400 hover:text-white" />
-              </button>
+      <div className="grid lg:grid-cols-[1fr,400px] gap-6">
+        {/* Left Side - Controls */}
+        <div className="space-y-4 lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:pr-2">
+          {/* Template Selection */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Palette className="w-4 h-4 text-purple-400" />
+              Choose Template
+            </h3>
+            <div className="grid grid-cols-4 gap-2">
+              {CARD_TEMPLATES.map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleTemplateSelect(template)}
+                  className={`aspect-square rounded-lg ${template.preview} transition-all ${
+                    selectedTemplate.id === template.id
+                      ? "ring-2 ring-purple-500 ring-offset-2 ring-offset-gray-900"
+                      : "hover:opacity-80"
+                  }`}
+                  title={template.name}
+                />
+              ))}
             </div>
+            <p className="text-xs text-gray-500 mt-2 text-center">{selectedTemplate.name}</p>
+          </Card>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+          {/* Size Selection */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Move className="w-4 h-4 text-cyan-400" />
+              Card Size
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {CARD_SIZES.map((size) => (
+                <button
+                  key={size.id}
+                  onClick={() => setSelectedSize(size)}
+                  className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
+                    selectedSize.id === size.id
+                      ? "bg-purple-500 text-white"
+                      : "bg-white/5 text-gray-400 hover:bg-white/10"
+                  }`}
+                >
+                  {size.name}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* Text Content */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Type className="w-4 h-4 text-green-400" />
+              Text Content
+            </h3>
+            <div className="space-y-3">
+              <Textarea
+                label="Hook Text"
+                value={hookText}
+                onChange={(e) => setHookText(e.target.value)}
+                placeholder="Enter your hook text..."
+                className="min-h-[100px]"
+              />
+              <div className="flex items-center gap-3">
                 <Input
-                  label="Template Name"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="My Awesome Template"
+                  label="Author/Handle"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  placeholder="@yourhandle"
+                  className="flex-1"
                 />
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">Category</label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value as "hook" | "thread" | "full")}
-                    className="input-dark w-full"
-                  >
-                    <option value="hook">Hook Only</option>
-                    <option value="thread">Thread Only</option>
-                    <option value="full">Full (Hook + Thread)</option>
-                  </select>
+                <div className="pt-6">
+                  <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showAuthor}
+                      onChange={(e) => setShowAuthor(e.target.checked)}
+                      className="rounded border-gray-600"
+                    />
+                    Show
+                  </label>
                 </div>
               </div>
+            </div>
+          </Card>
 
-              <Textarea
-                label="Description"
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
-                placeholder="Describe what this template is for..."
-                className="min-h-[60px]"
-              />
-
-              {(formCategory === "hook" || formCategory === "full") && (
-                <Textarea
-                  label="Hook Template"
-                  value={formHookTemplate}
-                  onChange={(e) => setFormHookTemplate(e.target.value)}
-                  placeholder="Use {{variable_name}} for dynamic content..."
-                  className="min-h-[80px]"
-                />
-              )}
-
-              {(formCategory === "thread" || formCategory === "full") && (
-                <Textarea
-                  label="Thread Template"
-                  value={formThreadTemplate}
-                  onChange={(e) => setFormThreadTemplate(e.target.value)}
-                  placeholder="Use {{variable_name}} for dynamic content..."
-                  className="min-h-[120px]"
-                />
-              )}
-
-              {/* Variables */}
+          {/* Text Styling */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3">Text Styling</h3>
+            <div className="space-y-4">
+              {/* Font Size */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-400">Variables</label>
-                  <Button variant="ghost" size="sm" onClick={addVariable}>
-                    <Plus className="w-3 h-3" />
-                    Add Variable
+                <label className="block text-xs text-gray-400 mb-2">Font Size: {config.fontSize}px</label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="glass"
+                    size="sm"
+                    onClick={() => updateConfig("fontSize", Math.max(16, config.fontSize - 2))}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <input
+                    type="range"
+                    min="16"
+                    max="48"
+                    value={config.fontSize}
+                    onChange={(e) => updateConfig("fontSize", Number(e.target.value))}
+                    className="flex-1 accent-purple-500"
+                  />
+                  <Button
+                    variant="glass"
+                    size="sm"
+                    onClick={() => updateConfig("fontSize", Math.min(48, config.fontSize + 2))}
+                  >
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </div>
-                {formVariables.length === 0 ? (
-                  <p className="text-sm text-gray-500">No variables. Add variables to make your template dynamic.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {formVariables.map((v, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
-                        <Input
-                          placeholder="name"
-                          value={v.name}
-                          onChange={(e) => updateVariable(i, "name", e.target.value)}
-                          className="flex-1"
-                        />
-                        <Input
-                          placeholder="default value"
-                          value={v.defaultValue}
-                          onChange={(e) => updateVariable(i, "defaultValue", e.target.value)}
-                          className="flex-1"
-                        />
-                        <button onClick={() => removeVariable(i)}>
-                          <X className="w-4 h-4 text-red-400" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isPublic"
-                  checked={formIsPublic}
-                  onChange={(e) => setFormIsPublic(e.target.checked)}
-                  className="rounded border-gray-600"
-                />
-                <label htmlFor="isPublic" className="text-sm text-gray-400">
-                  Make this template public (visible to all users)
-                </label>
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <Button variant="glass" onClick={() => setShowCreateModal(false)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateOrUpdate} isLoading={isSubmitting} className="flex-1">
-                  {editingTemplate ? "Update" : "Create"}
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Use Template Modal */}
-      {showUseModal && usingTemplate && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex items-center justify-between mb-6">
+              {/* Text Alignment */}
               <div>
-                <h2 className="text-xl font-bold">Use Template</h2>
-                <p className="text-sm text-gray-400">{usingTemplate.name}</p>
+                <label className="block text-xs text-gray-400 mb-2">Text Alignment</label>
+                <div className="flex items-center gap-2">
+                  {[
+                    { value: "left", icon: AlignLeft },
+                    { value: "center", icon: AlignCenter },
+                    { value: "right", icon: AlignRight },
+                  ].map(({ value, icon: Icon }) => (
+                    <Button
+                      key={value}
+                      variant={config.textAlign === value ? "primary" : "glass"}
+                      size="sm"
+                      onClick={() => updateConfig("textAlign", value)}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </Button>
+                  ))}
+                </div>
               </div>
-              <button onClick={() => setShowUseModal(false)}>
-                <X className="w-5 h-5 text-gray-400 hover:text-white" />
-              </button>
+
+              {/* Font Weight */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-2">Font Weight</label>
+                <div className="flex items-center gap-2">
+                  {["400", "500", "600", "700", "800"].map((weight) => (
+                    <button
+                      key={weight}
+                      onClick={() => updateConfig("fontWeight", weight)}
+                      className={`px-3 py-1.5 rounded text-xs transition-all ${
+                        config.fontWeight === weight
+                          ? "bg-purple-500 text-white"
+                          : "bg-white/5 text-gray-400 hover:bg-white/10"
+                      }`}
+                      style={{ fontWeight: weight }}
+                    >
+                      {weight === "400" ? "Regular" : weight === "700" ? "Bold" : weight}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Colors */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3">Colors</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-gray-400 mb-2">Text Color</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={config.textColor}
+                    onChange={(e) => updateConfig("textColor", e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border-0"
+                  />
+                  <Input
+                    value={config.textColor}
+                    onChange={(e) => updateConfig("textColor", e.target.value)}
+                    className="flex-1 text-xs"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-2">Accent Color</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={config.accentColor}
+                    onChange={(e) => updateConfig("accentColor", e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border-0"
+                  />
+                  <Input
+                    value={config.accentColor}
+                    onChange={(e) => updateConfig("accentColor", e.target.value)}
+                    className="flex-1 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Background Image */}
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-pink-400" />
+              Background Image
+            </h3>
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+
+              {uploadedImage ? (
+                <div className="space-y-3">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-white/5">
+                    <img
+                      src={uploadedImage}
+                      alt="Uploaded"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-2">
+                      Image Opacity: {imageOpacity}%
+                    </label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      value={imageOpacity}
+                      onChange={(e) => setImageOpacity(Number(e.target.value))}
+                      className="w-full accent-purple-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-2">Image Position</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "cover", label: "Cover" },
+                        { value: "contain", label: "Contain" },
+                        { value: "top", label: "Top" },
+                        { value: "bottom", label: "Bottom" },
+                      ].map(({ value, label }) => (
+                        <button
+                          key={value}
+                          onClick={() => setImagePosition(value as typeof imagePosition)}
+                          className={`px-3 py-1.5 rounded text-xs transition-all ${
+                            imagePosition === value
+                              ? "bg-purple-500 text-white"
+                              : "bg-white/5 text-gray-400 hover:bg-white/10"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="glass"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload Image
+                </Button>
+              )}
+            </div>
+          </Card>
+
+          {/* Reset */}
+          <Button
+            variant="glass"
+            onClick={() => {
+              setConfig(selectedTemplate.config);
+              setUploadedImage(null);
+              setImageOpacity(30);
+            }}
+            className="w-full"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset to Default
+          </Button>
+        </div>
+
+        {/* Right Side - Preview */}
+        <div className="lg:sticky lg:top-0">
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3 text-center">Preview</h3>
+            <p className="text-xs text-gray-500 text-center mb-3">
+              {selectedSize.width} × {selectedSize.height}px
+            </p>
+
+            {/* Card Preview */}
+            <div className="flex justify-center">
+              <div
+                ref={cardRef}
+                className="relative overflow-hidden rounded-lg shadow-2xl"
+                style={{
+                  width: previewWidth,
+                  height: previewHeight,
+                  background: config.background,
+                }}
+              >
+                {/* Background Image */}
+                {uploadedImage && (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      opacity: imageOpacity / 100,
+                    }}
+                  >
+                    <img
+                      src={uploadedImage}
+                      alt=""
+                      className="w-full h-full"
+                      style={{
+                        objectFit: imagePosition === "contain" ? "contain" : "cover",
+                        objectPosition: imagePosition === "top" ? "top" : imagePosition === "bottom" ? "bottom" : "center",
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Overlay gradient for readability */}
+                {uploadedImage && (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: `linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))`,
+                    }}
+                  />
+                )}
+
+                {/* Content */}
+                <div
+                  className="relative h-full flex flex-col justify-center"
+                  style={{ padding: config.padding }}
+                >
+                  {/* Decorative accent line */}
+                  <div
+                    className="w-12 h-1 rounded-full mb-4"
+                    style={{
+                      background: config.accentColor,
+                      marginLeft: config.textAlign === "center" ? "auto" : config.textAlign === "right" ? "auto" : 0,
+                      marginRight: config.textAlign === "center" ? "auto" : config.textAlign === "left" ? "auto" : 0,
+                    }}
+                  />
+
+                  {/* Hook Text */}
+                  <p
+                    className="whitespace-pre-wrap leading-tight"
+                    style={{
+                      color: config.textColor,
+                      fontSize: `${config.fontSize}px`,
+                      fontWeight: config.fontWeight,
+                      textAlign: config.textAlign,
+                    }}
+                  >
+                    {hookText}
+                  </p>
+
+                  {/* Author */}
+                  {showAuthor && authorName && (
+                    <p
+                      className="mt-6 text-sm opacity-80"
+                      style={{
+                        color: config.accentColor,
+                        textAlign: config.textAlign,
+                      }}
+                    >
+                      {authorName}
+                    </p>
+                  )}
+                </div>
+
+                {/* Corner accent */}
+                <div
+                  className="absolute bottom-0 right-0 w-20 h-20"
+                  style={{
+                    background: `linear-gradient(135deg, transparent 50%, ${config.accentColor}20 50%)`,
+                  }}
+                />
+              </div>
             </div>
 
-            {usingTemplate.content.variables.length > 0 && (
-              <div className="space-y-3 mb-6">
-                <p className="text-sm text-gray-400">Fill in the variables:</p>
-                {usingTemplate.content.variables.map((v) => (
-                  <Input
-                    key={v.name}
-                    label={v.name}
-                    placeholder={v.description || `Enter ${v.name}...`}
-                    value={variableValues[v.name] || ""}
-                    onChange={(e) => setVariableValues({ ...variableValues, [v.name]: e.target.value })}
-                  />
-                ))}
-              </div>
-            )}
-
-            <Button onClick={handleUseTemplate} isLoading={isGenerating} className="w-full mb-6">
-              <Sparkles className="w-4 h-4" />
-              Generate Content
-            </Button>
-
-            {generatedContent && (
-              <div className="space-y-4">
-                {generatedContent.hook && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-400 mb-2">Generated Hook:</p>
-                    <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                      <p className="text-white">{generatedContent.hook}</p>
-                    </div>
-                  </div>
-                )}
-                {generatedContent.thread && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-400 mb-2">Generated Thread:</p>
-                    <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg max-h-[300px] overflow-y-auto">
-                      <p className="text-white whitespace-pre-wrap">{generatedContent.thread}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Quick Tips */}
+            <div className="mt-4 p-3 bg-white/5 rounded-lg">
+              <p className="text-xs text-gray-400">
+                💡 <strong>Tip:</strong> Copy a hook from the Generate page and paste it here to create a shareable image.
+              </p>
+            </div>
           </Card>
         </div>
-      )}
+      </div>
     </div>
   );
 }

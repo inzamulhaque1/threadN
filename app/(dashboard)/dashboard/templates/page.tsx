@@ -1531,15 +1531,17 @@ export default function TemplatesPage() {
                 <div
                   className="absolute pointer-events-none select-none"
                   style={{
-                    ...(watermark.position === "bottom-right" && { bottom: 25 * scale, right: 25 * scale }),
-                    ...(watermark.position === "bottom-left" && { bottom: 25 * scale, left: 25 * scale }),
-                    ...(watermark.position === "bottom-center" && { bottom: 25 * scale, left: "50%", transform: "translateX(-50%)" }),
-                    ...(watermark.position === "top-right" && { top: 25 * scale, right: 25 * scale }),
-                    fontSize: 18 * scale,
+                    bottom: 25 * scale,
+                    right: 25 * scale,
+                    ...(watermark.position === "bottom-left" && { right: "auto", left: 25 * scale }),
+                    ...(watermark.position === "bottom-center" && { right: "auto", left: "50%", transform: "translateX(-50%)" }),
+                    ...(watermark.position === "top-right" && { bottom: "auto", top: 25 * scale }),
+                    fontSize: 20 * scale,
                     color: watermark.color,
-                    opacity: 0.7,
-                    fontWeight: 500,
+                    opacity: 0.85,
+                    fontWeight: 600,
                     letterSpacing: "0.02em",
+                    textShadow: "0 1px 3px rgba(0,0,0,0.5)",
                     zIndex: 100,
                   }}
                 >

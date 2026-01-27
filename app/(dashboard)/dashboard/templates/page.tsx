@@ -1045,7 +1045,7 @@ export default function TemplatesPage() {
 
       <div className="grid lg:grid-cols-[1fr,440px] gap-6">
         {/* Left Controls */}
-        <div className="space-y-4 lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:pr-3 thin-scrollbar">
+        <div className="space-y-4">
           {/* Recent Threads */}
           <Card className="p-4">
             <button onClick={() => setShowRecentThreads(!showRecentThreads)} className="w-full flex items-center justify-between mb-2">

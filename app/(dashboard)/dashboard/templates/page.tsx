@@ -1531,19 +1531,19 @@ export default function TemplatesPage() {
                 <div
                   className="absolute pointer-events-none select-none"
                   style={{
-                    ...(watermark.position === "bottom-right" && { bottom: 35 * scale, right: 35 * scale }),
-                    ...(watermark.position === "bottom-left" && { bottom: 35 * scale, left: 35 * scale }),
-                    ...(watermark.position === "bottom-center" && { bottom: 35 * scale, left: "50%", transform: "translateX(-50%)" }),
-                    ...(watermark.position === "top-right" && { top: 35 * scale, right: 35 * scale }),
-                    fontSize: 26 * scale,
+                    ...(watermark.position === "bottom-right" && { bottom: 25 * scale, right: 25 * scale }),
+                    ...(watermark.position === "bottom-left" && { bottom: 25 * scale, left: 25 * scale }),
+                    ...(watermark.position === "bottom-center" && { bottom: 25 * scale, left: "50%", transform: "translateX(-50%)" }),
+                    ...(watermark.position === "top-right" && { top: 25 * scale, right: 25 * scale }),
+                    fontSize: 16 * scale,
                     color: watermark.color,
-                    opacity: 0.85,
-                    fontWeight: 600,
-                    letterSpacing: "0.04em",
+                    opacity: 0.7,
+                    fontWeight: 500,
+                    letterSpacing: "0.02em",
                     zIndex: 100,
                   }}
                 >
-                  threadn.launchory.org
+                  made by threadn.launchory.org
                 </div>
               </div>
             </div>

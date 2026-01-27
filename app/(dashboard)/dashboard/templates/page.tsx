@@ -28,123 +28,176 @@ import { Button, Card, Input, Textarea } from "@/components/ui";
 import { toPng } from "html-to-image";
 import { userApi } from "@/lib/api";
 
-// Templates with actual designs (decorative elements included)
+// Template Categories
+const TEMPLATE_CATEGORIES = [
+  { id: "basic", name: "Basic", icon: "◼️" },
+  { id: "quote", name: "Quote", icon: "💬" },
+  { id: "bold", name: "Bold", icon: "🔥" },
+  { id: "minimal", name: "Minimal", icon: "◻️" },
+  { id: "neon", name: "Neon", icon: "✨" },
+];
+
+// Templates with actual designs (50 templates - 10 per category)
 const CARD_TEMPLATES = [
-  {
-    id: "quote-elegant",
-    name: "Elegant Quote",
-    preview: "🎯",
-    config: {
-      background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-      textColor: "#ffffff",
-      accentColor: "#8b5cf6",
-    },
-    decorations: [
-      { type: "quote", x: 80, y: 60, size: 120, color: "#8b5cf6", opacity: 0.3 },
-      { type: "line", x: 60, y: 900, width: 200, height: 4, color: "#8b5cf6" },
-    ],
-  },
-  {
-    id: "bold-gradient",
-    name: "Bold Gradient",
-    preview: "🔥",
-    config: {
-      background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)",
-      textColor: "#ffffff",
-      accentColor: "#fbbf24",
-    },
-    decorations: [
-      { type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.1 },
-      { type: "circle", x: 800, y: 700, size: 500, color: "#ffffff", opacity: 0.08 },
-    ],
-  },
-  {
-    id: "minimal-white",
-    name: "Minimal White",
-    preview: "⬜",
-    config: {
-      background: "#ffffff",
-      textColor: "#111827",
-      accentColor: "#8b5cf6",
-    },
-    decorations: [
-      { type: "border", x: 40, y: 40, width: 1000, height: 1000, color: "#e5e7eb", thickness: 2 },
-      { type: "line", x: 440, y: 850, width: 200, height: 4, color: "#8b5cf6" },
-    ],
-  },
-  {
-    id: "neon-dark",
-    name: "Neon Dark",
-    preview: "💜",
-    config: {
-      background: "#0a0a0a",
-      textColor: "#ffffff",
-      accentColor: "#00ff88",
-    },
-    decorations: [
-      { type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#00ff88", opacity: 0.5 },
-      { type: "corner", position: "top-left", size: 80, color: "#00ff88" },
-      { type: "corner", position: "bottom-right", size: 80, color: "#ff00ff" },
-    ],
-  },
-  {
-    id: "ocean-card",
-    name: "Ocean Wave",
-    preview: "🌊",
-    config: {
-      background: "linear-gradient(180deg, #0ea5e9 0%, #0369a1 100%)",
-      textColor: "#ffffff",
-      accentColor: "#fbbf24",
-    },
-    decorations: [
-      { type: "wave", y: 850, color: "#ffffff", opacity: 0.1 },
-      { type: "wave", y: 900, color: "#ffffff", opacity: 0.15 },
-      { type: "circle", x: 900, y: 100, size: 150, color: "#fbbf24", opacity: 0.3 },
-    ],
-  },
-  {
-    id: "sunset-warm",
-    name: "Sunset Glow",
-    preview: "🌅",
-    config: {
-      background: "linear-gradient(180deg, #fbbf24 0%, #f97316 50%, #dc2626 100%)",
-      textColor: "#ffffff",
-      accentColor: "#1f2937",
-    },
-    decorations: [
-      { type: "circle", x: 440, y: -200, size: 600, color: "#ffffff", opacity: 0.15 },
-      { type: "line", x: 340, y: 880, width: 400, height: 3, color: "#ffffff" },
-    ],
-  },
-  {
-    id: "forest-nature",
-    name: "Forest Calm",
-    preview: "🌲",
-    config: {
-      background: "linear-gradient(135deg, #065f46 0%, #064e3b 100%)",
-      textColor: "#ffffff",
-      accentColor: "#fbbf24",
-    },
-    decorations: [
-      { type: "leaf", x: 50, y: 50, size: 100, color: "#10b981", opacity: 0.3 },
-      { type: "leaf", x: 900, y: 850, size: 120, color: "#10b981", opacity: 0.25, rotate: 180 },
-      { type: "dots", x: 800, y: 100, color: "#fbbf24", opacity: 0.4 },
-    ],
-  },
-  {
-    id: "professional-dark",
-    name: "Professional",
-    preview: "💼",
-    config: {
-      background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
-      textColor: "#f3f4f6",
-      accentColor: "#3b82f6",
-    },
-    decorations: [
-      { type: "line", x: 60, y: 100, width: 100, height: 4, color: "#3b82f6" },
-      { type: "grid", x: 0, y: 0, color: "#374151", opacity: 0.3 },
-    ],
-  },
+  // === BASIC (10) ===
+  { id: "basic-1", category: "basic", name: "Classic Dark", preview: "🌑",
+    config: { background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)", textColor: "#ffffff", accentColor: "#6366f1" },
+    decorations: [] },
+  { id: "basic-2", category: "basic", name: "Ocean Blue", preview: "🌊",
+    config: { background: "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
+    decorations: [] },
+  { id: "basic-3", category: "basic", name: "Forest Green", preview: "🌲",
+    config: { background: "linear-gradient(135deg, #059669 0%, #047857 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
+    decorations: [] },
+  { id: "basic-4", category: "basic", name: "Sunset Orange", preview: "🌅",
+    config: { background: "linear-gradient(135deg, #f97316 0%, #dc2626 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
+    decorations: [] },
+  { id: "basic-5", category: "basic", name: "Purple Dream", preview: "💜",
+    config: { background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)", textColor: "#ffffff", accentColor: "#c4b5fd" },
+    decorations: [] },
+  { id: "basic-6", category: "basic", name: "Rose Pink", preview: "🌸",
+    config: { background: "linear-gradient(135deg, #ec4899 0%, #be185d 100%)", textColor: "#ffffff", accentColor: "#fce7f3" },
+    decorations: [] },
+  { id: "basic-7", category: "basic", name: "Sky Light", preview: "☁️",
+    config: { background: "linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)", textColor: "#ffffff", accentColor: "#1e3a5f" },
+    decorations: [] },
+  { id: "basic-8", category: "basic", name: "Warm Amber", preview: "🔶",
+    config: { background: "linear-gradient(135deg, #fbbf24 0%, #d97706 100%)", textColor: "#1f2937", accentColor: "#78350f" },
+    decorations: [] },
+  { id: "basic-9", category: "basic", name: "Cool Gray", preview: "🩶",
+    config: { background: "linear-gradient(180deg, #4b5563 0%, #1f2937 100%)", textColor: "#f3f4f6", accentColor: "#9ca3af" },
+    decorations: [] },
+  { id: "basic-10", category: "basic", name: "Midnight", preview: "🌙",
+    config: { background: "linear-gradient(180deg, #1e1b4b 0%, #0f0a1e 100%)", textColor: "#e0e7ff", accentColor: "#818cf8" },
+    decorations: [] },
+
+  // === QUOTE (10) ===
+  { id: "quote-1", category: "quote", name: "Elegant Quote", preview: "🎯",
+    config: { background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", textColor: "#ffffff", accentColor: "#8b5cf6" },
+    decorations: [{ type: "quote", x: 80, y: 60, size: 120, color: "#8b5cf6", opacity: 0.3 }, { type: "line", x: 60, y: 900, width: 200, height: 4, color: "#8b5cf6" }] },
+  { id: "quote-2", category: "quote", name: "Classic Quote", preview: "📜",
+    config: { background: "#faf5ee", textColor: "#1f2937", accentColor: "#b45309" },
+    decorations: [{ type: "quote", x: 60, y: 40, size: 150, color: "#b45309", opacity: 0.15 }, { type: "line", x: 440, y: 900, width: 200, height: 3, color: "#b45309" }] },
+  { id: "quote-3", category: "quote", name: "Modern Quote", preview: "💭",
+    config: { background: "#ffffff", textColor: "#111827", accentColor: "#6366f1" },
+    decorations: [{ type: "quote", x: 40, y: 30, size: 180, color: "#6366f1", opacity: 0.1 }, { type: "border", x: 60, y: 60, width: 960, height: 960, color: "#6366f1", thickness: 3 }] },
+  { id: "quote-4", category: "quote", name: "Wisdom Dark", preview: "🦉",
+    config: { background: "linear-gradient(180deg, #292524 0%, #1c1917 100%)", textColor: "#fafaf9", accentColor: "#fbbf24" },
+    decorations: [{ type: "quote", x: 70, y: 50, size: 140, color: "#fbbf24", opacity: 0.25 }, { type: "dots", x: 850, y: 850, color: "#fbbf24", opacity: 0.3 }] },
+  { id: "quote-5", category: "quote", name: "Inspiration", preview: "💡",
+    config: { background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", textColor: "#78350f", accentColor: "#b45309" },
+    decorations: [{ type: "quote", x: 50, y: 40, size: 130, color: "#b45309", opacity: 0.2 }, { type: "circle", x: 800, y: 750, size: 300, color: "#fbbf24", opacity: 0.3 }] },
+  { id: "quote-6", category: "quote", name: "Calm Quote", preview: "🧘",
+    config: { background: "linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%)", textColor: "#0c4a6e", accentColor: "#0284c7" },
+    decorations: [{ type: "quote", x: 60, y: 50, size: 120, color: "#0284c7", opacity: 0.15 }, { type: "wave", y: 880, color: "#0284c7", opacity: 0.1 }] },
+  { id: "quote-7", category: "quote", name: "Bold Quote", preview: "📢",
+    config: { background: "#dc2626", textColor: "#ffffff", accentColor: "#fef2f2" },
+    decorations: [{ type: "quote", x: 50, y: 30, size: 160, color: "#ffffff", opacity: 0.15 }] },
+  { id: "quote-8", category: "quote", name: "Nature Quote", preview: "🌿",
+    config: { background: "linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%)", textColor: "#064e3b", accentColor: "#059669" },
+    decorations: [{ type: "quote", x: 70, y: 60, size: 110, color: "#059669", opacity: 0.2 }, { type: "leaf", x: 850, y: 50, size: 100, color: "#10b981", opacity: 0.3 }] },
+  { id: "quote-9", category: "quote", name: "Royal Quote", preview: "👑",
+    config: { background: "linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)", textColor: "#e0e7ff", accentColor: "#fbbf24" },
+    decorations: [{ type: "quote", x: 60, y: 40, size: 130, color: "#fbbf24", opacity: 0.25 }, { type: "corner", position: "top-left", size: 60, color: "#fbbf24" }, { type: "corner", position: "bottom-right", size: 60, color: "#fbbf24" }] },
+  { id: "quote-10", category: "quote", name: "Tech Quote", preview: "💻",
+    config: { background: "#0f172a", textColor: "#e2e8f0", accentColor: "#22d3ee" },
+    decorations: [{ type: "quote", x: 50, y: 40, size: 120, color: "#22d3ee", opacity: 0.2 }, { type: "grid", x: 0, y: 0, color: "#334155", opacity: 0.4 }] },
+
+  // === BOLD (10) ===
+  { id: "bold-1", category: "bold", name: "Fire Gradient", preview: "🔥",
+    config: { background: "linear-gradient(135deg, #f97316 0%, #dc2626 50%, #7c2d12 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
+    decorations: [{ type: "circle", x: -150, y: -150, size: 500, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 750, y: 650, size: 600, color: "#ffffff", opacity: 0.08 }] },
+  { id: "bold-2", category: "bold", name: "Electric Purple", preview: "⚡",
+    config: { background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
+    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 800, y: 700, size: 500, color: "#ffffff", opacity: 0.08 }] },
+  { id: "bold-3", category: "bold", name: "Ocean Depth", preview: "🐋",
+    config: { background: "linear-gradient(180deg, #0ea5e9 0%, #1e40af 50%, #1e1b4b 100%)", textColor: "#ffffff", accentColor: "#38bdf8" },
+    decorations: [{ type: "wave", y: 800, color: "#ffffff", opacity: 0.1 }, { type: "wave", y: 860, color: "#ffffff", opacity: 0.15 }] },
+  { id: "bold-4", category: "bold", name: "Toxic Green", preview: "☢️",
+    config: { background: "linear-gradient(135deg, #22c55e 0%, #15803d 50%, #14532d 100%)", textColor: "#ffffff", accentColor: "#86efac" },
+    decorations: [{ type: "circle", x: 400, y: -100, size: 350, color: "#ffffff", opacity: 0.1 }, { type: "dots", x: 50, y: 850, color: "#86efac", opacity: 0.4 }] },
+  { id: "bold-5", category: "bold", name: "Sunset Blaze", preview: "🌆",
+    config: { background: "linear-gradient(180deg, #fbbf24 0%, #f97316 30%, #dc2626 60%, #7c2d12 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
+    decorations: [{ type: "circle", x: 440, y: -250, size: 700, color: "#ffffff", opacity: 0.15 }] },
+  { id: "bold-6", category: "bold", name: "Cyber Pink", preview: "🎀",
+    config: { background: "linear-gradient(135deg, #ec4899 0%, #be185d 50%, #831843 100%)", textColor: "#ffffff", accentColor: "#fce7f3" },
+    decorations: [{ type: "circle", x: -80, y: 700, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "line", x: 60, y: 100, width: 150, height: 5, color: "#fce7f3" }] },
+  { id: "bold-7", category: "bold", name: "Volcano", preview: "🌋",
+    config: { background: "linear-gradient(180deg, #ef4444 0%, #b91c1c 50%, #450a0a 100%)", textColor: "#ffffff", accentColor: "#fca5a5" },
+    decorations: [{ type: "circle", x: 350, y: 700, size: 500, color: "#fca5a5", opacity: 0.15 }] },
+  { id: "bold-8", category: "bold", name: "Aurora", preview: "🌌",
+    config: { background: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #ec4899 100%)", textColor: "#ffffff", accentColor: "#e0e7ff" },
+    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.15 }, { type: "circle", x: 800, y: 800, size: 400, color: "#ffffff", opacity: 0.1 }] },
+  { id: "bold-9", category: "bold", name: "Thunder", preview: "⛈️",
+    config: { background: "linear-gradient(180deg, #475569 0%, #1e293b 50%, #0f172a 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
+    decorations: [{ type: "line", x: 200, y: 150, width: 4, height: 200, color: "#fbbf24" }, { type: "line", x: 850, y: 700, width: 4, height: 150, color: "#fbbf24" }] },
+  { id: "bold-10", category: "bold", name: "Magma", preview: "🔴",
+    config: { background: "linear-gradient(135deg, #fbbf24 0%, #f97316 30%, #dc2626 70%, #450a0a 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
+    decorations: [{ type: "circle", x: 300, y: 300, size: 500, color: "#ffffff", opacity: 0.1 }] },
+
+  // === MINIMAL (10) ===
+  { id: "minimal-1", category: "minimal", name: "Clean White", preview: "⬜",
+    config: { background: "#ffffff", textColor: "#111827", accentColor: "#6366f1" },
+    decorations: [{ type: "line", x: 440, y: 880, width: 200, height: 3, color: "#6366f1" }] },
+  { id: "minimal-2", category: "minimal", name: "Soft Gray", preview: "🔲",
+    config: { background: "#f9fafb", textColor: "#1f2937", accentColor: "#6b7280" },
+    decorations: [{ type: "border", x: 50, y: 50, width: 980, height: 980, color: "#e5e7eb", thickness: 1 }] },
+  { id: "minimal-3", category: "minimal", name: "Paper", preview: "📄",
+    config: { background: "#fffbeb", textColor: "#78350f", accentColor: "#b45309" },
+    decorations: [{ type: "line", x: 60, y: 120, width: 80, height: 3, color: "#b45309" }] },
+  { id: "minimal-4", category: "minimal", name: "Slate", preview: "🪨",
+    config: { background: "#f1f5f9", textColor: "#0f172a", accentColor: "#475569" },
+    decorations: [{ type: "line", x: 480, y: 900, width: 120, height: 2, color: "#475569" }] },
+  { id: "minimal-5", category: "minimal", name: "Ivory", preview: "🦴",
+    config: { background: "#fefce8", textColor: "#365314", accentColor: "#65a30d" },
+    decorations: [{ type: "border", x: 40, y: 40, width: 1000, height: 1000, color: "#d9f99d", thickness: 2 }] },
+  { id: "minimal-6", category: "minimal", name: "Cloud", preview: "☁️",
+    config: { background: "#f0f9ff", textColor: "#0c4a6e", accentColor: "#0284c7" },
+    decorations: [{ type: "line", x: 60, y: 900, width: 100, height: 3, color: "#0284c7" }] },
+  { id: "minimal-7", category: "minimal", name: "Cream", preview: "🍦",
+    config: { background: "#fef7ed", textColor: "#7c2d12", accentColor: "#c2410c" },
+    decorations: [{ type: "line", x: 440, y: 100, width: 200, height: 2, color: "#c2410c" }, { type: "line", x: 440, y: 950, width: 200, height: 2, color: "#c2410c" }] },
+  { id: "minimal-8", category: "minimal", name: "Snow", preview: "❄️",
+    config: { background: "#ffffff", textColor: "#1e3a5f", accentColor: "#0ea5e9" },
+    decorations: [{ type: "corner", position: "top-left", size: 50, color: "#0ea5e9" }, { type: "corner", position: "bottom-right", size: 50, color: "#0ea5e9" }] },
+  { id: "minimal-9", category: "minimal", name: "Lavender", preview: "💜",
+    config: { background: "#faf5ff", textColor: "#581c87", accentColor: "#9333ea" },
+    decorations: [{ type: "line", x: 60, y: 900, width: 150, height: 3, color: "#9333ea" }] },
+  { id: "minimal-10", category: "minimal", name: "Mint", preview: "🌿",
+    config: { background: "#f0fdf4", textColor: "#14532d", accentColor: "#22c55e" },
+    decorations: [{ type: "border", x: 60, y: 60, width: 960, height: 960, color: "#bbf7d0", thickness: 2 }] },
+
+  // === NEON (10) ===
+  { id: "neon-1", category: "neon", name: "Cyber Green", preview: "💚",
+    config: { background: "#0a0a0a", textColor: "#ffffff", accentColor: "#00ff88" },
+    decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#00ff88", opacity: 0.5 }, { type: "corner", position: "top-left", size: 80, color: "#00ff88" }, { type: "corner", position: "bottom-right", size: 80, color: "#00ff88" }] },
+  { id: "neon-2", category: "neon", name: "Hot Pink", preview: "💗",
+    config: { background: "#0f0f0f", textColor: "#ffffff", accentColor: "#ff00ff" },
+    decorations: [{ type: "glow-border", x: 40, y: 40, width: 1000, height: 1000, color: "#ff00ff", opacity: 0.4 }] },
+  { id: "neon-3", category: "neon", name: "Electric Blue", preview: "💙",
+    config: { background: "#050505", textColor: "#ffffff", accentColor: "#00d4ff" },
+    decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#00d4ff", opacity: 0.5 }, { type: "line", x: 60, y: 100, width: 150, height: 3, color: "#00d4ff" }] },
+  { id: "neon-4", category: "neon", name: "Sunset Neon", preview: "🧡",
+    config: { background: "#0a0a0a", textColor: "#ffffff", accentColor: "#ff6b00" },
+    decorations: [{ type: "corner", position: "top-left", size: 100, color: "#ff6b00" }, { type: "corner", position: "bottom-right", size: 100, color: "#ff00ff" }, { type: "glow-border", x: 50, y: 50, width: 980, height: 980, color: "#ff6b00", opacity: 0.3 }] },
+  { id: "neon-5", category: "neon", name: "Matrix", preview: "🟢",
+    config: { background: "#000000", textColor: "#00ff00", accentColor: "#00ff00" },
+    decorations: [{ type: "grid", x: 0, y: 0, color: "#00ff00", opacity: 0.15 }] },
+  { id: "neon-6", category: "neon", name: "Purple Rain", preview: "🟣",
+    config: { background: "#0a0010", textColor: "#ffffff", accentColor: "#bf00ff" },
+    decorations: [{ type: "glow-border", x: 35, y: 35, width: 1010, height: 1010, color: "#bf00ff", opacity: 0.45 }, { type: "dots", x: 850, y: 50, color: "#bf00ff", opacity: 0.5 }] },
+  { id: "neon-7", category: "neon", name: "Tron", preview: "🔵",
+    config: { background: "#000814", textColor: "#ffffff", accentColor: "#00b4d8" },
+    decorations: [{ type: "border", x: 40, y: 40, width: 1000, height: 1000, color: "#00b4d8", thickness: 2 }, { type: "corner", position: "top-left", size: 60, color: "#00b4d8" }, { type: "corner", position: "top-right", size: 60, color: "#00b4d8" }, { type: "corner", position: "bottom-left", size: 60, color: "#00b4d8" }, { type: "corner", position: "bottom-right", size: 60, color: "#00b4d8" }] },
+  { id: "neon-8", category: "neon", name: "Vapor Wave", preview: "🌴",
+    config: { background: "linear-gradient(180deg, #1a0030 0%, #2d1b4e 50%, #1a0030 100%)", textColor: "#ff71ce", accentColor: "#01cdfe" },
+    decorations: [{ type: "line", x: 0, y: 540, width: 1080, height: 2, color: "#ff71ce" }, { type: "circle", x: 400, y: -200, size: 500, color: "#ff71ce", opacity: 0.1 }] },
+  { id: "neon-9", category: "neon", name: "Laser Red", preview: "❤️",
+    config: { background: "#0a0000", textColor: "#ffffff", accentColor: "#ff0040" },
+    decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#ff0040", opacity: 0.5 }, { type: "line", x: 60, y: 950, width: 200, height: 3, color: "#ff0040" }] },
+  { id: "neon-10", category: "neon", name: "Dual Neon", preview: "💜",
+    config: { background: "#050505", textColor: "#ffffff", accentColor: "#00ff88" },
+    decorations: [{ type: "corner", position: "top-left", size: 100, color: "#00ff88" }, { type: "corner", position: "top-right", size: 100, color: "#ff00ff" }, { type: "corner", position: "bottom-left", size: 100, color: "#ff00ff" }, { type: "corner", position: "bottom-right", size: 100, color: "#00ff88" }] },
 ];
 
 const CARD_SIZES = [
@@ -249,11 +302,15 @@ export default function TemplatesPage() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, elemX: 0, elemY: 0, elemW: 0, elemH: 0 });
 
   // Card design state
+  const [selectedCategory, setSelectedCategory] = useState("basic");
   const [selectedTemplate, setSelectedTemplate] = useState(CARD_TEMPLATES[0]);
   const [selectedSize, setSelectedSize] = useState(CARD_SIZES[0]);
   const [bgColor, setBgColor] = useState(CARD_TEMPLATES[0].config.background);
   const [textColor, setTextColor] = useState(CARD_TEMPLATES[0].config.textColor);
   const [accentColor, setAccentColor] = useState(CARD_TEMPLATES[0].config.accentColor);
+
+  // Filter templates by category
+  const filteredTemplates = CARD_TEMPLATES.filter(t => t.category === selectedCategory);
 
   // Background image
   const [bgImage, setBgImage] = useState<string | null>(null);
@@ -316,6 +373,7 @@ export default function TemplatesPage() {
 
   const handleTemplateSelect = (template: typeof CARD_TEMPLATES[0]) => {
     setSelectedTemplate(template);
+    setSelectedCategory(template.category);
     setBgColor(template.config.background);
     setTextColor(template.config.textColor);
     setAccentColor(template.config.accentColor);
@@ -822,8 +880,28 @@ export default function TemplatesPage() {
               <Palette className="w-4 h-4 text-purple-400" />
               Design Templates
             </h3>
-            <div className="grid grid-cols-4 gap-2">
-              {CARD_TEMPLATES.map((template) => (
+
+            {/* Category Tabs */}
+            <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
+              {TEMPLATE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all flex items-center gap-1 ${
+                    selectedCategory === cat.id
+                      ? "bg-purple-500 text-white"
+                      : "bg-white/5 text-gray-400 hover:bg-white/10"
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Template Grid */}
+            <div className="grid grid-cols-5 gap-2">
+              {filteredTemplates.map((template) => (
                 <button
                   key={template.id}
                   onClick={() => handleTemplateSelect(template)}
@@ -833,7 +911,7 @@ export default function TemplatesPage() {
                   title={template.name}
                   style={{ background: template.config.background }}
                 >
-                  <div className="absolute inset-0 flex items-center justify-center text-2xl">
+                  <div className="absolute inset-0 flex items-center justify-center text-lg">
                     {template.preview}
                   </div>
                 </button>

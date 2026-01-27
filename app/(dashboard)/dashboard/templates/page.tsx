@@ -429,12 +429,11 @@ interface Decoration {
   rotate?: number;
 }
 
-interface RecentHook {
+interface RecentThread {
   _id: string;
-  text: string;
-  score?: number;
-  reason?: string;
-  evidence?: string[];
+  title: string;
+  body: string;
+  hook?: string;
   createdAt: string;
 }
 
@@ -501,12 +500,12 @@ export default function TemplatesPage() {
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [bgOpacity, setBgOpacity] = useState(30);
 
-  // Recent hooks
-  const [recentHooks, setRecentHooks] = useState<RecentHook[]>([]);
-  const [loadingHooks, setLoadingHooks] = useState(false);
-  const [showRecentHooks, setShowRecentHooks] = useState(true);
-  const [copiedHookId, setCopiedHookId] = useState<string | null>(null);
-  const [selectedHook, setSelectedHook] = useState<RecentHook | null>(null);
+  // Recent threads
+  const [recentThreads, setRecentThreads] = useState<RecentThread[]>([]);
+  const [loadingThreads, setLoadingThreads] = useState(false);
+  const [showRecentThreads, setShowRecentThreads] = useState(true);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const [selectedThread, setSelectedThread] = useState<RecentThread | null>(null);
 
   // Export
   const [isExporting, setIsExporting] = useState(false);
@@ -520,45 +519,42 @@ export default function TemplatesPage() {
   const scale = previewWidth / selectedSize.width;
 
   useEffect(() => {
-    fetchRecentHooks();
+    fetchRecentThreads();
   }, []);
 
-  const fetchRecentHooks = async () => {
-    setLoadingHooks(true);
+  const fetchRecentThreads = async () => {
+    setLoadingThreads(true);
     try {
-      const result = await userApi.history(1, 10, "hooks");
+      const result = await userApi.history(1, 20, "thread");
       if (result.success && result.data) {
-        const data = result.data as { generations: Array<{ _id: string; output: { hooks: Array<{ text: string; score?: number; reason?: string; evidence?: string[] }> }; createdAt: string }> };
-        const hooks: RecentHook[] = [];
+        const data = result.data as { generations: Array<{ _id: string; input: { selectedHook?: string }; output: { thread?: { title: string; body: string } }; createdAt: string }> };
+        const threads: RecentThread[] = [];
         data.generations.forEach((gen) => {
-          if (gen.output?.hooks) {
-            gen.output.hooks.forEach((hook, index) => {
-              hooks.push({
-                _id: `${gen._id}-${index}`,
-                text: hook.text,
-                score: hook.score,
-                reason: hook.reason,
-                evidence: hook.evidence,
-                createdAt: gen.createdAt,
-              });
+          if (gen.output?.thread) {
+            threads.push({
+              _id: gen._id,
+              title: gen.output.thread.title,
+              body: gen.output.thread.body,
+              hook: gen.input?.selectedHook,
+              createdAt: gen.createdAt,
             });
           }
         });
-        setRecentHooks(hooks.slice(0, 20));
+        setRecentThreads(threads);
       }
     } catch (err) {
-      console.error("Failed to fetch hooks:", err);
+      console.error("Failed to fetch threads:", err);
     }
-    setLoadingHooks(false);
+    setLoadingThreads(false);
   };
 
-  const handleUseHook = (hook: RecentHook) => {
+  const handleUseThread = (thread: RecentThread) => {
     setElements((prev) =>
-      prev.map((el) => (el.id === "hook-text" ? { ...el, content: hook.text } : el))
+      prev.map((el) => (el.id === "hook-text" ? { ...el, content: thread.hook || thread.title } : el))
     );
-    setSelectedHook(hook);
-    setCopiedHookId(hook._id);
-    setTimeout(() => setCopiedHookId(null), 2000);
+    setSelectedThread(thread);
+    setSelectedThreadId(thread._id);
+    setTimeout(() => setSelectedThreadId(null), 2000);
   };
 
   const handleTemplateSelect = (template: typeof CARD_TEMPLATES[0]) => {
@@ -1050,36 +1046,41 @@ export default function TemplatesPage() {
       <div className="grid lg:grid-cols-[1fr,440px] gap-6">
         {/* Left Controls */}
         <div className="space-y-4 lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:pr-2">
-          {/* Recent Hooks */}
+          {/* Recent Threads */}
           <Card className="p-4">
-            <button onClick={() => setShowRecentHooks(!showRecentHooks)} className="w-full flex items-center justify-between mb-2">
+            <button onClick={() => setShowRecentThreads(!showRecentThreads)} className="w-full flex items-center justify-between mb-2">
               <h3 className="font-semibold flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-purple-400" />
-                Your Recent Hooks
+                Your Recent Threads
               </h3>
-              {showRecentHooks ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {showRecentThreads ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
 
-            {showRecentHooks && (
-              <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                {loadingHooks ? (
+            {showRecentThreads && (
+              <div className="space-y-2 max-h-[250px] overflow-y-auto">
+                {loadingThreads ? (
                   <div className="flex justify-center py-4">
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-purple-500" />
                   </div>
-                ) : recentHooks.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">No hooks yet. Generate some!</p>
+                ) : recentThreads.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">No threads yet. Generate some!</p>
                 ) : (
-                  recentHooks.map((hook) => (
+                  recentThreads.map((thread) => (
                     <div
-                      key={hook._id}
-                      className="group p-3 bg-white/5 rounded-lg hover:bg-white/10 cursor-pointer"
-                      onClick={() => handleUseHook(hook)}
+                      key={thread._id}
+                      className={`group p-3 rounded-lg cursor-pointer transition-all ${
+                        selectedThread?._id === thread._id
+                          ? "bg-purple-500/20 border border-purple-500/50"
+                          : "bg-white/5 hover:bg-white/10"
+                      }`}
+                      onClick={() => handleUseThread(thread)}
                     >
-                      <p className="text-sm text-gray-300 line-clamp-2">{hook.text}</p>
+                      <p className="text-sm font-medium text-white line-clamp-1">{thread.title}</p>
+                      <p className="text-xs text-gray-400 line-clamp-2 mt-1">{thread.body}</p>
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs text-gray-500">{new Date(hook.createdAt).toLocaleDateString()}</span>
-                        <span className={`text-xs flex items-center gap-1 ${copiedHookId === hook._id ? "text-green-400" : "text-purple-400 opacity-0 group-hover:opacity-100"}`}>
-                          {copiedHookId === hook._id ? <><Check className="w-3 h-3" /> Used!</> : <><Copy className="w-3 h-3" /> Use</>}
+                        <span className="text-xs text-gray-500">{new Date(thread.createdAt).toLocaleDateString()}</span>
+                        <span className={`text-xs flex items-center gap-1 ${selectedThreadId === thread._id ? "text-green-400" : "text-purple-400 opacity-0 group-hover:opacity-100"}`}>
+                          {selectedThreadId === thread._id ? <><Check className="w-3 h-3" /> Selected!</> : <><Copy className="w-3 h-3" /> Use</>}
                         </span>
                       </div>
                     </div>
@@ -1566,55 +1567,40 @@ export default function TemplatesPage() {
               <p className="text-xs text-gray-400"><strong>Click</strong> select • <strong>Drag</strong> move • <strong>Corners</strong> resize</p>
             </div>
 
-            {/* Selected Hook Details */}
-            {selectedHook && (
+            {/* Selected Thread Details */}
+            {selectedThread && (
               <div className="mt-4 p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
                 <h4 className="font-semibold text-purple-400 mb-3 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
-                  Hook Details
+                  Thread Details
                 </h4>
 
                 <div className="space-y-3">
-                  {/* Score */}
-                  {selectedHook.score !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">Score:</span>
-                      <div className="flex-1 bg-white/10 rounded-full h-2">
-                        <div
-                          className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-                          style={{ width: `${selectedHook.score}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-semibold text-purple-400">{selectedHook.score}%</span>
+                  {/* Hook */}
+                  {selectedThread.hook && (
+                    <div>
+                      <span className="text-xs text-gray-400 block mb-1">Hook:</span>
+                      <p className="text-sm text-white font-medium bg-white/5 rounded-lg p-2">{selectedThread.hook}</p>
                     </div>
                   )}
 
-                  {/* Reason */}
-                  {selectedHook.reason && (
-                    <div>
-                      <span className="text-xs text-gray-400 block mb-1">Why it works:</span>
-                      <p className="text-sm text-gray-300 bg-white/5 rounded-lg p-2">{selectedHook.reason}</p>
-                    </div>
-                  )}
+                  {/* Title */}
+                  <div>
+                    <span className="text-xs text-gray-400 block mb-1">Title:</span>
+                    <p className="text-sm text-purple-300 font-semibold">{selectedThread.title}</p>
+                  </div>
 
-                  {/* Evidence */}
-                  {selectedHook.evidence && selectedHook.evidence.length > 0 && (
-                    <div>
-                      <span className="text-xs text-gray-400 block mb-1">Evidence:</span>
-                      <ul className="space-y-1">
-                        {selectedHook.evidence.map((ev, i) => (
-                          <li key={i} className="text-xs text-gray-400 bg-white/5 rounded px-2 py-1 flex items-start gap-2">
-                            <Check className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
-                            {ev}
-                          </li>
-                        ))}
-                      </ul>
+                  {/* Body */}
+                  <div>
+                    <span className="text-xs text-gray-400 block mb-1">Thread Content:</span>
+                    <div className="text-sm text-gray-300 bg-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+                      {selectedThread.body}
                     </div>
-                  )}
+                  </div>
 
                   {/* Date */}
                   <div className="text-xs text-gray-500 pt-2 border-t border-white/10">
-                    Generated: {new Date(selectedHook.createdAt).toLocaleString()}
+                    Generated: {new Date(selectedThread.createdAt).toLocaleString()}
                   </div>
                 </div>
               </div>

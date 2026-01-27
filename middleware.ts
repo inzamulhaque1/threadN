@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
   // Get token
   const token = await getToken({
     req: request,
-    secret: process.env.AUTH_SECRET,
+    secret: process.env.JWT_SECRET,
   });
 
   // Protected routes

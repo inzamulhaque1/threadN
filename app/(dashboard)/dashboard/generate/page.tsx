@@ -205,14 +205,18 @@ export default function GeneratePage() {
 
     setGeneratingThreadFor(index);
     setError(null);
+    setLastGenerationId(null);
 
     try {
       const result = await generateApi.thread(transcript, hook.text, cta);
 
       if (result.success && result.data) {
-        const data = result.data as { thread: IThread };
+        const data = result.data as { thread: IThread; generationId?: string };
         setThread(data.thread);
         setActiveHook(hook);
+        if (data.generationId) {
+          setLastGenerationId(data.generationId);
+        }
         await refreshUser();
       } else {
         if (result.error?.includes("LIMIT_REACHED")) {

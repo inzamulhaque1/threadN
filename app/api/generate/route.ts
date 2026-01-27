@@ -224,8 +224,9 @@ export async function POST(request: NextRequest) {
     user.usage.monthlyCost = (user.usage.monthlyCost || 0) + cost;
 
     // Save generation (skip for content/url modes as they're intermediate)
+    let generationId: string | null = null;
     if (mode !== "content" && mode !== "url") {
-      await Generation.create({
+      const generation = await Generation.create({
         userId: user._id.toString(),
         type: mode,
         input: {
@@ -237,6 +238,7 @@ export async function POST(request: NextRequest) {
         tokens,
         cost,
       });
+      generationId = generation._id.toString();
     }
 
     // Save user
@@ -246,6 +248,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         ...result,
+        generationId,
         usage: {
           dailyThreads: user.usage.dailyThreads,
           dailyLimit: limits.dailyThreads,

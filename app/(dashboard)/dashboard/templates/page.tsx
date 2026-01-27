@@ -177,6 +177,10 @@ interface CanvasElement {
   borderRadius?: number;
   shadow?: boolean;
   objectFit?: "cover" | "contain" | "fill" | "none";
+  // Image zoom and position
+  zoom?: number;
+  imageX?: number;
+  imageY?: number;
 }
 
 interface Decoration {
@@ -350,6 +354,9 @@ export default function TemplatesPage() {
           borderRadius: 8,
           shadow: true,
           objectFit: "cover",
+          zoom: 100,
+          imageX: 50,
+          imageY: 50,
         };
         setElements((prev) => [...prev, newImage]);
         setSelectedId(newImage.id);
@@ -908,6 +915,33 @@ export default function TemplatesPage() {
 
               {selectedElement.type === "image" && (
                 <div className="space-y-4">
+                  {/* Zoom Control */}
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-2">Zoom: {selectedElement.zoom || 100}%</label>
+                    <div className="flex items-center gap-2">
+                      <Button variant="glass" size="sm" onClick={() => updateElement(selectedElement.id, { zoom: Math.max(100, (selectedElement.zoom || 100) - 10) })}><Minus className="w-4 h-4" /></Button>
+                      <input type="range" min="100" max="300" value={selectedElement.zoom || 100} onChange={(e) => updateElement(selectedElement.id, { zoom: Number(e.target.value) })} className="flex-1 accent-purple-500" />
+                      <Button variant="glass" size="sm" onClick={() => updateElement(selectedElement.id, { zoom: Math.min(300, (selectedElement.zoom || 100) + 10) })}><Plus className="w-4 h-4" /></Button>
+                    </div>
+                  </div>
+
+                  {/* Position Controls - only show when zoomed */}
+                  {(selectedElement.zoom || 100) > 100 && (
+                    <div className="space-y-3 p-3 bg-white/5 rounded-lg">
+                      <p className="text-xs text-gray-400 font-medium">Position (drag to adjust)</p>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Horizontal: {selectedElement.imageX || 50}%</label>
+                        <input type="range" min="0" max="100" value={selectedElement.imageX || 50} onChange={(e) => updateElement(selectedElement.id, { imageX: Number(e.target.value) })} className="w-full accent-purple-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Vertical: {selectedElement.imageY || 50}%</label>
+                        <input type="range" min="0" max="100" value={selectedElement.imageY || 50} onChange={(e) => updateElement(selectedElement.id, { imageY: Number(e.target.value) })} className="w-full accent-purple-500" />
+                      </div>
+                      <Button variant="glass" size="sm" onClick={() => updateElement(selectedElement.id, { imageX: 50, imageY: 50 })} className="w-full text-xs">Center Image</Button>
+                    </div>
+                  )}
+
+                  {/* Fit Options */}
                   <div className="grid grid-cols-2 gap-2">
                     {IMAGE_FIT_OPTIONS.map((opt) => (
                       <button key={opt.id} onClick={() => updateElement(selectedElement.id, { objectFit: opt.id as "cover" | "contain" | "fill" | "none" })} className={`p-2 rounded text-left text-xs ${selectedElement.objectFit === opt.id ? "bg-purple-500 text-white" : "bg-white/5"}`}>
@@ -916,11 +950,15 @@ export default function TemplatesPage() {
                       </button>
                     ))}
                   </div>
+
+                  {/* Border Radius */}
                   <div className="flex items-center gap-2">
                     <button onClick={() => updateElement(selectedElement.id, { borderRadius: 0 })} className={`p-2 rounded ${selectedElement.borderRadius === 0 ? "bg-purple-500" : "bg-white/5"}`}><Square className="w-4 h-4" /></button>
                     <input type="range" min="0" max="50" value={selectedElement.borderRadius || 0} onChange={(e) => updateElement(selectedElement.id, { borderRadius: Number(e.target.value) })} className="flex-1 accent-purple-500" />
                     <button onClick={() => updateElement(selectedElement.id, { borderRadius: 50 })} className={`p-2 rounded ${selectedElement.borderRadius === 50 ? "bg-purple-500" : "bg-white/5"}`}><Circle className="w-4 h-4" /></button>
                   </div>
+
+                  {/* Shadow */}
                   <label className="flex items-center gap-2 text-sm text-gray-400">
                     <input type="checkbox" checked={selectedElement.shadow || false} onChange={(e) => updateElement(selectedElement.id, { shadow: e.target.checked })} className="rounded" />
                     Shadow
@@ -1023,19 +1061,28 @@ export default function TemplatesPage() {
                           {el.content}
                         </div>
                       ) : (
-                        <img
-                          src={el.content}
-                          alt=""
-                          className="w-full h-full"
+                        <div
+                          className="w-full h-full overflow-hidden"
                           style={{
-                            objectFit: el.objectFit || "cover",
                             borderRadius: `${el.borderRadius || 0}%`,
                             boxShadow: el.shadow ? "0 10px 30px rgba(0,0,0,0.4)" : "none",
-                            userSelect: "none",
-                            pointerEvents: "none",
                           }}
-                          draggable={false}
-                        />
+                        >
+                          <img
+                            src={el.content}
+                            alt=""
+                            style={{
+                              width: `${el.zoom || 100}%`,
+                              height: `${el.zoom || 100}%`,
+                              objectFit: el.objectFit || "cover",
+                              objectPosition: `${el.imageX || 50}% ${el.imageY || 50}%`,
+                              transform: `translate(-${((el.zoom || 100) - 100) * (el.imageX || 50) / 100}%, -${((el.zoom || 100) - 100) * (el.imageY || 50) / 100}%)`,
+                              userSelect: "none",
+                              pointerEvents: "none",
+                            }}
+                            draggable={false}
+                          />
+                        </div>
                       )}
                       {isSelected && <ResizeHandles elementId={el.id} />}
                     </div>

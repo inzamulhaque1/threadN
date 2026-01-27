@@ -60,6 +60,7 @@ export default function GeneratePage() {
   // Favorites state
   const [lastGenerationId, setLastGenerationId] = useState<string | null>(null);
   const [isSavingFavorite, setIsSavingFavorite] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // Template state
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
@@ -206,6 +207,7 @@ export default function GeneratePage() {
     setGeneratingThreadFor(index);
     setError(null);
     setLastGenerationId(null);
+    setIsFavorited(false);
 
     try {
       const result = await generateApi.thread(transcript, hook.text, cta);
@@ -275,6 +277,11 @@ export default function GeneratePage() {
       return;
     }
 
+    if (isFavorited) {
+      setError("Already in favorites!");
+      return;
+    }
+
     setIsSavingFavorite(true);
     setError(null);
 
@@ -285,9 +292,13 @@ export default function GeneratePage() {
     });
 
     if (result.success) {
+      setIsFavorited(true);
       setSuccessMessage("Added to favorites!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } else {
+      if (result.error?.includes("Already in favorites")) {
+        setIsFavorited(true);
+      }
       setError(result.error || "Failed to add to favorites");
     }
 
@@ -780,9 +791,10 @@ export default function GeneratePage() {
                     size="sm"
                     onClick={handleAddToFavorites}
                     isLoading={isSavingFavorite}
-                    disabled={!lastGenerationId}
+                    disabled={!lastGenerationId || isFavorited}
+                    className={isFavorited ? "border-red-500/50 bg-red-500/10" : ""}
                   >
-                    <Heart className="w-4 h-4" />
+                    <Heart className={`w-4 h-4 ${isFavorited ? "fill-red-500 text-red-500" : ""}`} />
                   </Button>
                   <Button
                     variant="glass"

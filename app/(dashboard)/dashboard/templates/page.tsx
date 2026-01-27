@@ -22,22 +22,22 @@ import {
   RectangleHorizontal,
   Sparkles,
   Quote,
-  Zap,
-  Target,
-  MessageCircle,
   ChevronDown,
   ChevronUp,
+  GripVertical,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { Button, Card, Input, Textarea } from "@/components/ui";
 import { toPng } from "html-to-image";
 import { userApi } from "@/lib/api";
+import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 
 // Pre-designed card templates with actual designs
 const CARD_TEMPLATES = [
   {
     id: "quote-elegant",
     name: "Elegant Quote",
-    category: "quote",
     config: {
       background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
       textColor: "#ffffff",
@@ -45,17 +45,14 @@ const CARD_TEMPLATES = [
       fontSize: 24,
       fontWeight: "500",
       textAlign: "center" as const,
-      padding: 48,
       showQuoteIcon: true,
       showAccentLine: true,
-      showCornerAccent: false,
       borderStyle: "none",
     },
   },
   {
     id: "bold-statement",
     name: "Bold Statement",
-    category: "bold",
     config: {
       background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)",
       textColor: "#ffffff",
@@ -63,17 +60,14 @@ const CARD_TEMPLATES = [
       fontSize: 28,
       fontWeight: "800",
       textAlign: "center" as const,
-      padding: 40,
       showQuoteIcon: false,
       showAccentLine: false,
-      showCornerAccent: true,
       borderStyle: "none",
     },
   },
   {
     id: "minimal-clean",
     name: "Minimal Clean",
-    category: "minimal",
     config: {
       background: "#ffffff",
       textColor: "#111827",
@@ -81,17 +75,14 @@ const CARD_TEMPLATES = [
       fontSize: 22,
       fontWeight: "600",
       textAlign: "left" as const,
-      padding: 48,
       showQuoteIcon: false,
       showAccentLine: true,
-      showCornerAccent: false,
       borderStyle: "subtle",
     },
   },
   {
     id: "dark-neon",
     name: "Dark Neon",
-    category: "dark",
     config: {
       background: "#000000",
       textColor: "#00ff88",
@@ -99,17 +90,14 @@ const CARD_TEMPLATES = [
       fontSize: 24,
       fontWeight: "700",
       textAlign: "center" as const,
-      padding: 40,
       showQuoteIcon: false,
       showAccentLine: false,
-      showCornerAccent: true,
       borderStyle: "glow",
     },
   },
   {
     id: "ocean-wave",
     name: "Ocean Wave",
-    category: "gradient",
     config: {
       background: "linear-gradient(135deg, #06b6d4 0%, #2563eb 100%)",
       textColor: "#ffffff",
@@ -117,17 +105,14 @@ const CARD_TEMPLATES = [
       fontSize: 24,
       fontWeight: "600",
       textAlign: "center" as const,
-      padding: 44,
       showQuoteIcon: true,
       showAccentLine: false,
-      showCornerAccent: false,
       borderStyle: "none",
     },
   },
   {
     id: "sunset-glow",
     name: "Sunset Glow",
-    category: "gradient",
     config: {
       background: "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
       textColor: "#ffffff",
@@ -135,17 +120,14 @@ const CARD_TEMPLATES = [
       fontSize: 24,
       fontWeight: "600",
       textAlign: "center" as const,
-      padding: 44,
       showQuoteIcon: false,
       showAccentLine: true,
-      showCornerAccent: true,
       borderStyle: "none",
     },
   },
   {
     id: "forest-calm",
     name: "Forest Calm",
-    category: "gradient",
     config: {
       background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
       textColor: "#ffffff",
@@ -153,17 +135,14 @@ const CARD_TEMPLATES = [
       fontSize: 24,
       fontWeight: "500",
       textAlign: "center" as const,
-      padding: 44,
       showQuoteIcon: true,
       showAccentLine: false,
-      showCornerAccent: false,
       borderStyle: "none",
     },
   },
   {
     id: "professional",
     name: "Professional",
-    category: "minimal",
     config: {
       background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)",
       textColor: "#f3f4f6",
@@ -171,10 +150,8 @@ const CARD_TEMPLATES = [
       fontSize: 22,
       fontWeight: "500",
       textAlign: "left" as const,
-      padding: 48,
       showQuoteIcon: false,
       showAccentLine: true,
-      showCornerAccent: false,
       borderStyle: "subtle",
     },
   },
@@ -195,21 +172,27 @@ interface CardConfig {
   fontSize: number;
   fontWeight: string;
   textAlign: "left" | "center" | "right";
-  padding: number;
   showQuoteIcon: boolean;
   showAccentLine: boolean;
-  showCornerAccent: boolean;
   borderStyle: "none" | "subtle" | "glow";
 }
 
+interface DraggableElement {
+  x: number;
+  y: number;
+  locked: boolean;
+}
+
 interface ContentImageConfig {
-  enabled: boolean;
   url: string | null;
   size: number;
   borderRadius: number;
-  position: "top" | "bottom" | "left" | "right";
-  margin: number;
   shadow: boolean;
+  position: DraggableElement;
+}
+
+interface TextConfig {
+  position: DraggableElement;
 }
 
 interface RecentHook {
@@ -222,6 +205,8 @@ export default function TemplatesPage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const contentImageInputRef = useRef<HTMLInputElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   // Card content state
   const [hookText, setHookText] = useState("Your viral hook goes here.\n\nMake it impactful!");
@@ -236,17 +221,19 @@ export default function TemplatesPage() {
   // Background image state
   const [bgImage, setBgImage] = useState<string | null>(null);
   const [bgOpacity, setBgOpacity] = useState(30);
-  const [bgPosition, setBgPosition] = useState<"cover" | "contain" | "top" | "bottom">("cover");
 
-  // Content image state
+  // Content image state with position
   const [contentImage, setContentImage] = useState<ContentImageConfig>({
-    enabled: false,
     url: null,
-    size: 120,
+    size: 100,
     borderRadius: 12,
-    position: "top",
-    margin: 20,
     shadow: true,
+    position: { x: 140, y: 30, locked: false },
+  });
+
+  // Text position state
+  const [textPosition, setTextPosition] = useState<TextConfig>({
+    position: { x: 20, y: 150, locked: false },
   });
 
   // Recent hooks state
@@ -258,6 +245,9 @@ export default function TemplatesPage() {
   // Export state
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+
+  // Edit mode
+  const [editMode, setEditMode] = useState(true);
 
   // Fetch recent hooks on mount
   useEffect(() => {
@@ -315,16 +305,39 @@ export default function TemplatesPage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setContentImage((prev) => ({ ...prev, enabled: true, url: reader.result as string }));
+        setContentImage((prev) => ({ ...prev, url: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTextDrag = (_e: DraggableEvent, data: DraggableData) => {
+    if (!textPosition.position.locked) {
+      setTextPosition((prev) => ({
+        ...prev,
+        position: { ...prev.position, x: data.x, y: data.y },
+      }));
+    }
+  };
+
+  const handleImageDrag = (_e: DraggableEvent, data: DraggableData) => {
+    if (!contentImage.position.locked) {
+      setContentImage((prev) => ({
+        ...prev,
+        position: { ...prev.position, x: data.x, y: data.y },
+      }));
     }
   };
 
   const handleExport = async () => {
     if (!cardRef.current) return;
 
+    setEditMode(false);
     setIsExporting(true);
+
+    // Wait for re-render without edit handles
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     try {
       const scale = selectedSize.width / cardRef.current.offsetWidth;
 
@@ -350,14 +363,16 @@ export default function TemplatesPage() {
     } catch (err) {
       console.error("Export failed:", err);
     }
+
     setIsExporting(false);
+    setEditMode(true);
   };
 
   const updateConfig = (key: keyof CardConfig, value: string | number | boolean) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
   };
 
-  const updateContentImage = (key: keyof ContentImageConfig, value: string | number | boolean | null) => {
+  const updateContentImage = (key: keyof Omit<ContentImageConfig, "position">, value: string | number | boolean | null) => {
     setContentImage((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -365,7 +380,7 @@ export default function TemplatesPage() {
   const previewMaxWidth = 380;
   const aspectRatio = selectedSize.height / selectedSize.width;
   const previewWidth = previewMaxWidth;
-  const previewHeight = previewMaxWidth * aspectRatio;
+  const previewHeight = Math.min(previewMaxWidth * aspectRatio, 500);
 
   return (
     <div className="h-full">
@@ -373,7 +388,7 @@ export default function TemplatesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Card Designer</h1>
-          <p className="text-gray-400 text-sm">Create stunning social media cards</p>
+          <p className="text-gray-400 text-sm">Drag elements to position them freely</p>
         </div>
         <Button
           onClick={handleExport}
@@ -434,15 +449,7 @@ export default function TemplatesPage() {
                           {new Date(hook.createdAt).toLocaleDateString()}
                         </span>
                         <span className={`text-xs flex items-center gap-1 ${copiedHookId === hook._id ? "text-green-400" : "text-purple-400 opacity-0 group-hover:opacity-100"}`}>
-                          {copiedHookId === hook._id ? (
-                            <>
-                              <Check className="w-3 h-3" /> Used!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3 h-3" /> Click to use
-                            </>
-                          )}
+                          {copiedHookId === hook._id ? <><Check className="w-3 h-3" /> Used!</> : <><Copy className="w-3 h-3" /> Click to use</>}
                         </span>
                       </div>
                     </div>
@@ -471,7 +478,6 @@ export default function TemplatesPage() {
                   title={template.name}
                   style={{ background: template.config.background }}
                 >
-                  {/* Mini preview of design elements */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
                     {template.config.showQuoteIcon && (
                       <Quote className="w-3 h-3 mb-1" style={{ color: template.config.accentColor }} />
@@ -484,12 +490,6 @@ export default function TemplatesPage() {
                       <div className="h-1 rounded w-3/4 mx-auto" style={{ background: template.config.textColor, opacity: 0.5 }} />
                     </div>
                   </div>
-                  {template.config.showCornerAccent && (
-                    <div
-                      className="absolute bottom-0 right-0 w-4 h-4"
-                      style={{ background: `linear-gradient(135deg, transparent 50%, ${template.config.accentColor}40 50%)` }}
-                    />
-                  )}
                 </button>
               ))}
             </div>
@@ -521,10 +521,22 @@ export default function TemplatesPage() {
 
           {/* Text Content */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Type className="w-4 h-4 text-green-400" />
-              Text Content
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Type className="w-4 h-4 text-green-400" />
+                Text Content
+              </h3>
+              <button
+                onClick={() => setTextPosition((prev) => ({
+                  ...prev,
+                  position: { ...prev.position, locked: !prev.position.locked },
+                }))}
+                className={`p-1.5 rounded ${textPosition.position.locked ? "bg-red-500/20 text-red-400" : "bg-white/5 text-gray-400"}`}
+                title={textPosition.position.locked ? "Unlock position" : "Lock position"}
+              >
+                {textPosition.position.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+              </button>
+            </div>
             <div className="space-y-3">
               <Textarea
                 label="Hook Text"
@@ -560,16 +572,15 @@ export default function TemplatesPage() {
           <Card className="p-4">
             <h3 className="font-semibold mb-3">Text Styling</h3>
             <div className="space-y-4">
-              {/* Font Size */}
               <div>
                 <label className="block text-xs text-gray-400 mb-2">Font Size: {config.fontSize}px</label>
                 <div className="flex items-center gap-2">
-                  <Button variant="glass" size="sm" onClick={() => updateConfig("fontSize", Math.max(16, config.fontSize - 2))}>
+                  <Button variant="glass" size="sm" onClick={() => updateConfig("fontSize", Math.max(14, config.fontSize - 2))}>
                     <Minus className="w-4 h-4" />
                   </Button>
                   <input
                     type="range"
-                    min="16"
+                    min="14"
                     max="48"
                     value={config.fontSize}
                     onChange={(e) => updateConfig("fontSize", Number(e.target.value))}
@@ -581,7 +592,6 @@ export default function TemplatesPage() {
                 </div>
               </div>
 
-              {/* Text Alignment */}
               <div>
                 <label className="block text-xs text-gray-400 mb-2">Alignment</label>
                 <div className="flex items-center gap-2">
@@ -602,7 +612,6 @@ export default function TemplatesPage() {
                 </div>
               </div>
 
-              {/* Font Weight */}
               <div>
                 <label className="block text-xs text-gray-400 mb-2">Font Weight</label>
                 <div className="flex flex-wrap gap-2">
@@ -611,9 +620,7 @@ export default function TemplatesPage() {
                       key={weight}
                       onClick={() => updateConfig("fontWeight", weight)}
                       className={`px-3 py-1.5 rounded text-xs transition-all ${
-                        config.fontWeight === weight
-                          ? "bg-purple-500 text-white"
-                          : "bg-white/5 text-gray-400 hover:bg-white/10"
+                        config.fontWeight === weight ? "bg-purple-500 text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"
                       }`}
                       style={{ fontWeight: weight }}
                     >
@@ -623,17 +630,16 @@ export default function TemplatesPage() {
                 </div>
               </div>
 
-              {/* Padding */}
-              <div>
-                <label className="block text-xs text-gray-400 mb-2">Padding: {config.padding}px</label>
-                <input
-                  type="range"
-                  min="20"
-                  max="80"
-                  value={config.padding}
-                  onChange={(e) => updateConfig("padding", Number(e.target.value))}
-                  className="w-full accent-purple-500"
-                />
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
+                <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
+                  <input type="checkbox" checked={config.showQuoteIcon} onChange={(e) => updateConfig("showQuoteIcon", e.target.checked)} className="rounded border-gray-600" />
+                  <Quote className="w-3 h-3" />
+                  <span className="text-xs">Quote</span>
+                </label>
+                <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
+                  <input type="checkbox" checked={config.showAccentLine} onChange={(e) => updateConfig("showAccentLine", e.target.checked)} className="rounded border-gray-600" />
+                  <span className="text-xs">Accent Line</span>
+                </label>
               </div>
             </div>
           </Card>
@@ -651,11 +657,7 @@ export default function TemplatesPage() {
                     onChange={(e) => updateConfig("textColor", e.target.value)}
                     className="w-10 h-10 rounded cursor-pointer border-0"
                   />
-                  <Input
-                    value={config.textColor}
-                    onChange={(e) => updateConfig("textColor", e.target.value)}
-                    className="flex-1 text-xs"
-                  />
+                  <Input value={config.textColor} onChange={(e) => updateConfig("textColor", e.target.value)} className="flex-1 text-xs" />
                 </div>
               </div>
               <div>
@@ -667,158 +669,82 @@ export default function TemplatesPage() {
                     onChange={(e) => updateConfig("accentColor", e.target.value)}
                     className="w-10 h-10 rounded cursor-pointer border-0"
                   />
-                  <Input
-                    value={config.accentColor}
-                    onChange={(e) => updateConfig("accentColor", e.target.value)}
-                    className="flex-1 text-xs"
-                  />
+                  <Input value={config.accentColor} onChange={(e) => updateConfig("accentColor", e.target.value)} className="flex-1 text-xs" />
                 </div>
-              </div>
-            </div>
-
-            {/* Design Elements */}
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <label className="block text-xs text-gray-400 mb-2">Design Elements</label>
-              <div className="flex flex-wrap gap-2">
-                <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
-                  <input
-                    type="checkbox"
-                    checked={config.showQuoteIcon}
-                    onChange={(e) => updateConfig("showQuoteIcon", e.target.checked)}
-                    className="rounded border-gray-600"
-                  />
-                  <Quote className="w-3 h-3" />
-                  <span className="text-xs">Quote</span>
-                </label>
-                <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
-                  <input
-                    type="checkbox"
-                    checked={config.showAccentLine}
-                    onChange={(e) => updateConfig("showAccentLine", e.target.checked)}
-                    className="rounded border-gray-600"
-                  />
-                  <span className="text-xs">Accent Line</span>
-                </label>
-                <label className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
-                  <input
-                    type="checkbox"
-                    checked={config.showCornerAccent}
-                    onChange={(e) => updateConfig("showCornerAccent", e.target.checked)}
-                    className="rounded border-gray-600"
-                  />
-                  <span className="text-xs">Corner</span>
-                </label>
               </div>
             </div>
           </Card>
 
           {/* Content Image */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-pink-400" />
-              Content Image
-            </h3>
-            <input
-              ref={contentImageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleContentImageUpload}
-              className="hidden"
-            />
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-pink-400" />
+                Content Image
+              </h3>
+              {contentImage.url && (
+                <button
+                  onClick={() => setContentImage((prev) => ({
+                    ...prev,
+                    position: { ...prev.position, locked: !prev.position.locked },
+                  }))}
+                  className={`p-1.5 rounded ${contentImage.position.locked ? "bg-red-500/20 text-red-400" : "bg-white/5 text-gray-400"}`}
+                  title={contentImage.position.locked ? "Unlock position" : "Lock position"}
+                >
+                  {contentImage.position.locked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
+            <input ref={contentImageInputRef} type="file" accept="image/*" onChange={handleContentImageUpload} className="hidden" />
 
             {contentImage.url ? (
               <div className="space-y-3">
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-white/5">
                   <img src={contentImage.url} alt="Content" className="w-full h-full object-cover" />
                   <button
-                    onClick={() => setContentImage((prev) => ({ ...prev, enabled: false, url: null }))}
+                    onClick={() => setContentImage((prev) => ({ ...prev, url: null }))}
                     className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/80 hover:bg-red-500"
                   >
                     <Trash2 className="w-4 h-4 text-white" />
                   </button>
                 </div>
 
-                {/* Image Controls */}
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-2">Size: {contentImage.size}px</label>
-                    <input
-                      type="range"
-                      min="60"
-                      max="200"
-                      value={contentImage.size}
-                      onChange={(e) => updateContentImage("size", Number(e.target.value))}
-                      className="w-full accent-purple-500"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-2">Size: {contentImage.size}px</label>
+                  <input
+                    type="range"
+                    min="40"
+                    max="200"
+                    value={contentImage.size}
+                    onChange={(e) => updateContentImage("size", Number(e.target.value))}
+                    className="w-full accent-purple-500"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-2">Border Radius: {contentImage.borderRadius}px</label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateContentImage("borderRadius", 0)}
-                        className={`p-2 rounded ${contentImage.borderRadius === 0 ? "bg-purple-500" : "bg-white/5"}`}
-                      >
-                        <Square className="w-4 h-4" />
-                      </button>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={contentImage.borderRadius}
-                        onChange={(e) => updateContentImage("borderRadius", Number(e.target.value))}
-                        className="flex-1 accent-purple-500"
-                      />
-                      <button
-                        onClick={() => updateContentImage("borderRadius", 100)}
-                        className={`p-2 rounded ${contentImage.borderRadius === 100 ? "bg-purple-500" : "bg-white/5"}`}
-                      >
-                        <Circle className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-2">Position</label>
-                    <div className="flex flex-wrap gap-2">
-                      {["top", "bottom", "left", "right"].map((pos) => (
-                        <button
-                          key={pos}
-                          onClick={() => updateContentImage("position", pos)}
-                          className={`px-3 py-1.5 rounded text-xs capitalize transition-all ${
-                            contentImage.position === pos
-                              ? "bg-purple-500 text-white"
-                              : "bg-white/5 text-gray-400 hover:bg-white/10"
-                          }`}
-                        >
-                          {pos}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-gray-400 mb-2">Margin: {contentImage.margin}px</label>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-2">Border Radius: {contentImage.borderRadius}%</label>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => updateContentImage("borderRadius", 0)} className={`p-2 rounded ${contentImage.borderRadius === 0 ? "bg-purple-500" : "bg-white/5"}`}>
+                      <Square className="w-4 h-4" />
+                    </button>
                     <input
                       type="range"
                       min="0"
-                      max="40"
-                      value={contentImage.margin}
-                      onChange={(e) => updateContentImage("margin", Number(e.target.value))}
-                      className="w-full accent-purple-500"
+                      max="50"
+                      value={contentImage.borderRadius}
+                      onChange={(e) => updateContentImage("borderRadius", Number(e.target.value))}
+                      className="flex-1 accent-purple-500"
                     />
+                    <button onClick={() => updateContentImage("borderRadius", 50)} className={`p-2 rounded ${contentImage.borderRadius === 50 ? "bg-purple-500" : "bg-white/5"}`}>
+                      <Circle className="w-4 h-4" />
+                    </button>
                   </div>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={contentImage.shadow}
-                      onChange={(e) => updateContentImage("shadow", e.target.checked)}
-                      className="rounded border-gray-600"
-                    />
-                    <span className="text-sm text-gray-400">Drop Shadow</span>
-                  </label>
                 </div>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={contentImage.shadow} onChange={(e) => updateContentImage("shadow", e.target.checked)} className="rounded border-gray-600" />
+                  <span className="text-sm text-gray-400">Drop Shadow</span>
+                </label>
               </div>
             ) : (
               <Button variant="glass" onClick={() => contentImageInputRef.current?.click()} className="w-full">
@@ -834,26 +760,16 @@ export default function TemplatesPage() {
               <RectangleHorizontal className="w-4 h-4 text-blue-400" />
               Background Image
             </h3>
-            <input
-              ref={bgImageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleBgImageUpload}
-              className="hidden"
-            />
+            <input ref={bgImageInputRef} type="file" accept="image/*" onChange={handleBgImageUpload} className="hidden" />
 
             {bgImage ? (
               <div className="space-y-3">
                 <div className="relative aspect-video rounded-lg overflow-hidden bg-white/5">
                   <img src={bgImage} alt="Background" className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => setBgImage(null)}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/80 hover:bg-red-500"
-                  >
+                  <button onClick={() => setBgImage(null)} className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500/80 hover:bg-red-500">
                     <Trash2 className="w-4 h-4 text-white" />
                   </button>
                 </div>
-
                 <div>
                   <label className="block text-xs text-gray-400 mb-2">Opacity: {bgOpacity}%</label>
                   <input
@@ -864,23 +780,6 @@ export default function TemplatesPage() {
                     onChange={(e) => setBgOpacity(Number(e.target.value))}
                     className="w-full accent-purple-500"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-gray-400 mb-2">Position</label>
-                  <div className="flex flex-wrap gap-2">
-                    {["cover", "contain", "top", "bottom"].map((pos) => (
-                      <button
-                        key={pos}
-                        onClick={() => setBgPosition(pos as typeof bgPosition)}
-                        className={`px-3 py-1.5 rounded text-xs capitalize ${
-                          bgPosition === pos ? "bg-purple-500 text-white" : "bg-white/5 text-gray-400"
-                        }`}
-                      >
-                        {pos}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </div>
             ) : (
@@ -897,7 +796,8 @@ export default function TemplatesPage() {
             onClick={() => {
               setConfig(selectedTemplate.config);
               setBgImage(null);
-              setContentImage({ enabled: false, url: null, size: 120, borderRadius: 12, position: "top", margin: 20, shadow: true });
+              setContentImage({ url: null, size: 100, borderRadius: 12, shadow: true, position: { x: 140, y: 30, locked: false } });
+              setTextPosition({ position: { x: 20, y: 150, locked: false } });
             }}
             className="w-full"
           >
@@ -910,7 +810,7 @@ export default function TemplatesPage() {
         <div className="lg:sticky lg:top-0">
           <Card className="p-4">
             <h3 className="font-semibold mb-2 text-center">Preview</h3>
-            <p className="text-xs text-gray-500 text-center mb-3">{selectedSize.width} × {selectedSize.height}px</p>
+            <p className="text-xs text-gray-500 text-center mb-3">{selectedSize.width} × {selectedSize.height}px • Drag to reposition</p>
 
             {/* Card Preview */}
             <div className="flex justify-center overflow-hidden">
@@ -919,7 +819,7 @@ export default function TemplatesPage() {
                 className="relative overflow-hidden rounded-lg shadow-2xl"
                 style={{
                   width: previewWidth,
-                  height: Math.min(previewHeight, 500),
+                  height: previewHeight,
                   background: config.background,
                   border: config.borderStyle === "subtle" ? "1px solid rgba(255,255,255,0.1)" : config.borderStyle === "glow" ? `2px solid ${config.accentColor}` : "none",
                   boxShadow: config.borderStyle === "glow" ? `0 0 20px ${config.accentColor}40` : undefined,
@@ -929,38 +829,31 @@ export default function TemplatesPage() {
                 {bgImage && (
                   <>
                     <div className="absolute inset-0" style={{ opacity: bgOpacity / 100 }}>
-                      <img
-                        src={bgImage}
-                        alt=""
-                        className="w-full h-full"
-                        style={{
-                          objectFit: bgPosition === "contain" ? "contain" : "cover",
-                          objectPosition: bgPosition === "top" ? "top" : bgPosition === "bottom" ? "bottom" : "center",
-                        }}
-                      />
+                      <img src={bgImage} alt="" className="w-full h-full object-cover" />
                     </div>
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))" }} />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5))" }} />
                   </>
                 )}
 
-                {/* Content */}
-                <div
-                  className={`relative h-full flex ${
-                    contentImage.url && contentImage.position === "left" ? "flex-row" :
-                    contentImage.url && contentImage.position === "right" ? "flex-row-reverse" :
-                    contentImage.url && contentImage.position === "bottom" ? "flex-col-reverse" :
-                    "flex-col"
-                  } ${contentImage.url && (contentImage.position === "left" || contentImage.position === "right") ? "items-center" : ""} justify-center`}
-                  style={{ padding: config.padding }}
-                >
-                  {/* Content Image */}
-                  {contentImage.url && (
+                {/* Draggable Content Image */}
+                {contentImage.url && (
+                  <Draggable
+                    position={{ x: contentImage.position.x, y: contentImage.position.y }}
+                    onDrag={handleImageDrag}
+                    disabled={contentImage.position.locked}
+                    bounds="parent"
+                    nodeRef={imageRef}
+                  >
                     <div
-                      style={{
-                        margin: contentImage.margin,
-                        flexShrink: 0,
-                      }}
+                      ref={imageRef}
+                      className={`absolute cursor-move ${editMode && !contentImage.position.locked ? "ring-2 ring-pink-500 ring-offset-2 ring-offset-transparent" : ""}`}
+                      style={{ zIndex: 10 }}
                     >
+                      {editMode && !contentImage.position.locked && (
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-pink-500 text-white text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                          <GripVertical className="w-3 h-3" /> Image
+                        </div>
+                      )}
                       <img
                         src={contentImage.url}
                         alt=""
@@ -969,44 +862,45 @@ export default function TemplatesPage() {
                           height: contentImage.size,
                           objectFit: "cover",
                           borderRadius: `${contentImage.borderRadius}%`,
-                          boxShadow: contentImage.shadow ? "0 10px 30px rgba(0,0,0,0.3)" : "none",
+                          boxShadow: contentImage.shadow ? "0 10px 30px rgba(0,0,0,0.4)" : "none",
                         }}
                       />
                     </div>
-                  )}
+                  </Draggable>
+                )}
 
-                  {/* Text Content */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    {/* Quote Icon */}
+                {/* Draggable Text */}
+                <Draggable
+                  position={{ x: textPosition.position.x, y: textPosition.position.y }}
+                  onDrag={handleTextDrag}
+                  disabled={textPosition.position.locked}
+                  bounds="parent"
+                  nodeRef={textRef}
+                >
+                  <div
+                    ref={textRef}
+                    className={`absolute cursor-move ${editMode && !textPosition.position.locked ? "ring-2 ring-green-500 ring-offset-2 ring-offset-transparent" : ""}`}
+                    style={{ zIndex: 20, maxWidth: previewWidth - 40 }}
+                  >
+                    {editMode && !textPosition.position.locked && (
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-0.5 rounded flex items-center gap-1">
+                        <GripVertical className="w-3 h-3" /> Text
+                      </div>
+                    )}
+
                     {config.showQuoteIcon && (
-                      <Quote
-                        className="w-8 h-8 mb-3"
-                        style={{
-                          color: config.accentColor,
-                          marginLeft: config.textAlign === "center" ? "auto" : config.textAlign === "right" ? "auto" : 0,
-                          marginRight: config.textAlign === "center" ? "auto" : config.textAlign === "left" ? "auto" : 0,
-                        }}
-                      />
+                      <Quote className="w-6 h-6 mb-2" style={{ color: config.accentColor }} />
                     )}
 
-                    {/* Accent Line */}
                     {config.showAccentLine && (
-                      <div
-                        className="w-12 h-1 rounded-full mb-4"
-                        style={{
-                          background: config.accentColor,
-                          marginLeft: config.textAlign === "center" ? "auto" : config.textAlign === "right" ? "auto" : 0,
-                          marginRight: config.textAlign === "center" ? "auto" : config.textAlign === "left" ? "auto" : 0,
-                        }}
-                      />
+                      <div className="w-10 h-1 rounded-full mb-3" style={{ background: config.accentColor }} />
                     )}
 
-                    {/* Hook Text */}
                     <p
                       className="whitespace-pre-wrap leading-tight"
                       style={{
                         color: config.textColor,
-                        fontSize: `${config.fontSize * 0.65}px`,
+                        fontSize: `${config.fontSize * 0.6}px`,
                         fontWeight: config.fontWeight,
                         textAlign: config.textAlign,
                       }}
@@ -1014,31 +908,19 @@ export default function TemplatesPage() {
                       {hookText}
                     </p>
 
-                    {/* Author */}
                     {showAuthor && authorName && (
-                      <p
-                        className="mt-4 text-sm opacity-80"
-                        style={{ color: config.accentColor, textAlign: config.textAlign }}
-                      >
+                      <p className="mt-3 text-sm opacity-80" style={{ color: config.accentColor, textAlign: config.textAlign }}>
                         {authorName}
                       </p>
                     )}
                   </div>
-                </div>
-
-                {/* Corner Accent */}
-                {config.showCornerAccent && (
-                  <div
-                    className="absolute bottom-0 right-0 w-16 h-16"
-                    style={{ background: `linear-gradient(135deg, transparent 50%, ${config.accentColor}30 50%)` }}
-                  />
-                )}
+                </Draggable>
               </div>
             </div>
 
             <div className="mt-4 p-3 bg-white/5 rounded-lg">
               <p className="text-xs text-gray-400">
-                💡 <strong>Tip:</strong> Click any hook above to instantly use it in your card design.
+                💡 <strong>Drag</strong> the text and image to position them anywhere. Use <Lock className="w-3 h-3 inline" /> to lock position.
               </p>
             </div>
           </Card>

@@ -1045,7 +1045,7 @@ export default function TemplatesPage() {
 
       <div className="grid lg:grid-cols-[1fr,440px] gap-6">
         {/* Left Controls */}
-        <div className="space-y-4 lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:pr-2">
+        <div className="space-y-4 lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:pr-3 thin-scrollbar">
           {/* Recent Threads */}
           <Card className="p-4">
             <button onClick={() => setShowRecentThreads(!showRecentThreads)} className="w-full flex items-center justify-between mb-2">
@@ -1057,7 +1057,7 @@ export default function TemplatesPage() {
             </button>
 
             {showRecentThreads && (
-              <div className="space-y-2 max-h-[250px] overflow-y-auto">
+              <div className="space-y-2 max-h-[250px] overflow-y-auto thin-scrollbar pr-1">
                 {loadingThreads ? (
                   <div className="flex justify-center py-4">
                     <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-purple-500" />
@@ -1593,7 +1593,7 @@ export default function TemplatesPage() {
                   {/* Body */}
                   <div>
                     <span className="text-xs text-gray-400 block mb-1">Thread Content:</span>
-                    <div className="text-sm text-gray-300 bg-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto whitespace-pre-wrap">
+                    <div className="text-sm text-gray-300 bg-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto whitespace-pre-wrap thin-scrollbar">
                       {selectedThread.body}
                     </div>
                   </div>

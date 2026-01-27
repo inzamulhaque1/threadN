@@ -30,174 +30,273 @@ import { userApi } from "@/lib/api";
 
 // Template Categories
 const TEMPLATE_CATEGORIES = [
-  { id: "basic", name: "Basic", icon: "◼️" },
-  { id: "quote", name: "Quote", icon: "💬" },
-  { id: "bold", name: "Bold", icon: "🔥" },
-  { id: "minimal", name: "Minimal", icon: "◻️" },
-  { id: "neon", name: "Neon", icon: "✨" },
+  { id: "basic", name: "Basic" },
+  { id: "bold", name: "Bold" },
+  { id: "minimal", name: "Minimal" },
+  { id: "neon", name: "Neon" },
+  { id: "nature", name: "Nature" },
+  { id: "floral", name: "Floral" },
+  { id: "tech", name: "Tech" },
+  { id: "business", name: "Business" },
 ];
 
-// Templates with actual designs (50 templates - 10 per category)
+// Templates with actual designs (80 templates - 10 per category)
 const CARD_TEMPLATES = [
   // === BASIC (10) ===
-  { id: "basic-1", category: "basic", name: "Classic Dark", preview: "🌑",
+  { id: "basic-1", category: "basic", name: "Classic Dark",
     config: { background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)", textColor: "#ffffff", accentColor: "#6366f1" },
-    decorations: [] },
-  { id: "basic-2", category: "basic", name: "Ocean Blue", preview: "🌊",
+    decorations: [{ type: "circle", x: -200, y: -200, size: 500, color: "#6366f1", opacity: 0.1 }] },
+  { id: "basic-2", category: "basic", name: "Ocean Blue",
     config: { background: "linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
-    decorations: [] },
-  { id: "basic-3", category: "basic", name: "Forest Green", preview: "🌲",
+    decorations: [{ type: "wave", y: 850, color: "#ffffff", opacity: 0.15 }] },
+  { id: "basic-3", category: "basic", name: "Forest Green",
     config: { background: "linear-gradient(135deg, #059669 0%, #047857 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
-    decorations: [] },
-  { id: "basic-4", category: "basic", name: "Sunset Orange", preview: "🌅",
+    decorations: [{ type: "circle", x: 800, y: -100, size: 400, color: "#10b981", opacity: 0.2 }] },
+  { id: "basic-4", category: "basic", name: "Sunset Orange",
     config: { background: "linear-gradient(135deg, #f97316 0%, #dc2626 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
-    decorations: [] },
-  { id: "basic-5", category: "basic", name: "Purple Dream", preview: "💜",
+    decorations: [{ type: "circle", x: 400, y: -150, size: 500, color: "#ffffff", opacity: 0.15 }] },
+  { id: "basic-5", category: "basic", name: "Purple Dream",
     config: { background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)", textColor: "#ffffff", accentColor: "#c4b5fd" },
-    decorations: [] },
-  { id: "basic-6", category: "basic", name: "Rose Pink", preview: "🌸",
+    decorations: [{ type: "circle", x: -100, y: 700, size: 500, color: "#a78bfa", opacity: 0.15 }] },
+  { id: "basic-6", category: "basic", name: "Rose Pink",
     config: { background: "linear-gradient(135deg, #ec4899 0%, #be185d 100%)", textColor: "#ffffff", accentColor: "#fce7f3" },
-    decorations: [] },
-  { id: "basic-7", category: "basic", name: "Sky Light", preview: "☁️",
+    decorations: [{ type: "circle", x: 700, y: 600, size: 600, color: "#ffffff", opacity: 0.1 }] },
+  { id: "basic-7", category: "basic", name: "Sky Light",
     config: { background: "linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)", textColor: "#ffffff", accentColor: "#1e3a5f" },
-    decorations: [] },
-  { id: "basic-8", category: "basic", name: "Warm Amber", preview: "🔶",
+    decorations: [{ type: "circle", x: 800, y: 50, size: 200, color: "#ffffff", opacity: 0.3 }] },
+  { id: "basic-8", category: "basic", name: "Warm Amber",
     config: { background: "linear-gradient(135deg, #fbbf24 0%, #d97706 100%)", textColor: "#1f2937", accentColor: "#78350f" },
-    decorations: [] },
-  { id: "basic-9", category: "basic", name: "Cool Gray", preview: "🩶",
+    decorations: [{ type: "circle", x: -150, y: -150, size: 450, color: "#ffffff", opacity: 0.2 }] },
+  { id: "basic-9", category: "basic", name: "Cool Gray",
     config: { background: "linear-gradient(180deg, #4b5563 0%, #1f2937 100%)", textColor: "#f3f4f6", accentColor: "#9ca3af" },
-    decorations: [] },
-  { id: "basic-10", category: "basic", name: "Midnight", preview: "🌙",
+    decorations: [{ type: "line", x: 60, y: 100, width: 120, height: 4, color: "#9ca3af" }] },
+  { id: "basic-10", category: "basic", name: "Midnight",
     config: { background: "linear-gradient(180deg, #1e1b4b 0%, #0f0a1e 100%)", textColor: "#e0e7ff", accentColor: "#818cf8" },
-    decorations: [] },
-
-  // === QUOTE (10) ===
-  { id: "quote-1", category: "quote", name: "Elegant Quote", preview: "🎯",
-    config: { background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", textColor: "#ffffff", accentColor: "#8b5cf6" },
-    decorations: [{ type: "quote", x: 80, y: 60, size: 120, color: "#8b5cf6", opacity: 0.3 }, { type: "line", x: 60, y: 900, width: 200, height: 4, color: "#8b5cf6" }] },
-  { id: "quote-2", category: "quote", name: "Classic Quote", preview: "📜",
-    config: { background: "#faf5ee", textColor: "#1f2937", accentColor: "#b45309" },
-    decorations: [{ type: "quote", x: 60, y: 40, size: 150, color: "#b45309", opacity: 0.15 }, { type: "line", x: 440, y: 900, width: 200, height: 3, color: "#b45309" }] },
-  { id: "quote-3", category: "quote", name: "Modern Quote", preview: "💭",
-    config: { background: "#ffffff", textColor: "#111827", accentColor: "#6366f1" },
-    decorations: [{ type: "quote", x: 40, y: 30, size: 180, color: "#6366f1", opacity: 0.1 }, { type: "border", x: 60, y: 60, width: 960, height: 960, color: "#6366f1", thickness: 3 }] },
-  { id: "quote-4", category: "quote", name: "Wisdom Dark", preview: "🦉",
-    config: { background: "linear-gradient(180deg, #292524 0%, #1c1917 100%)", textColor: "#fafaf9", accentColor: "#fbbf24" },
-    decorations: [{ type: "quote", x: 70, y: 50, size: 140, color: "#fbbf24", opacity: 0.25 }, { type: "dots", x: 850, y: 850, color: "#fbbf24", opacity: 0.3 }] },
-  { id: "quote-5", category: "quote", name: "Inspiration", preview: "💡",
-    config: { background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", textColor: "#78350f", accentColor: "#b45309" },
-    decorations: [{ type: "quote", x: 50, y: 40, size: 130, color: "#b45309", opacity: 0.2 }, { type: "circle", x: 800, y: 750, size: 300, color: "#fbbf24", opacity: 0.3 }] },
-  { id: "quote-6", category: "quote", name: "Calm Quote", preview: "🧘",
-    config: { background: "linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%)", textColor: "#0c4a6e", accentColor: "#0284c7" },
-    decorations: [{ type: "quote", x: 60, y: 50, size: 120, color: "#0284c7", opacity: 0.15 }, { type: "wave", y: 880, color: "#0284c7", opacity: 0.1 }] },
-  { id: "quote-7", category: "quote", name: "Bold Quote", preview: "📢",
-    config: { background: "#dc2626", textColor: "#ffffff", accentColor: "#fef2f2" },
-    decorations: [{ type: "quote", x: 50, y: 30, size: 160, color: "#ffffff", opacity: 0.15 }] },
-  { id: "quote-8", category: "quote", name: "Nature Quote", preview: "🌿",
-    config: { background: "linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%)", textColor: "#064e3b", accentColor: "#059669" },
-    decorations: [{ type: "quote", x: 70, y: 60, size: 110, color: "#059669", opacity: 0.2 }, { type: "leaf", x: 850, y: 50, size: 100, color: "#10b981", opacity: 0.3 }] },
-  { id: "quote-9", category: "quote", name: "Royal Quote", preview: "👑",
-    config: { background: "linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)", textColor: "#e0e7ff", accentColor: "#fbbf24" },
-    decorations: [{ type: "quote", x: 60, y: 40, size: 130, color: "#fbbf24", opacity: 0.25 }, { type: "corner", position: "top-left", size: 60, color: "#fbbf24" }, { type: "corner", position: "bottom-right", size: 60, color: "#fbbf24" }] },
-  { id: "quote-10", category: "quote", name: "Tech Quote", preview: "💻",
-    config: { background: "#0f172a", textColor: "#e2e8f0", accentColor: "#22d3ee" },
-    decorations: [{ type: "quote", x: 50, y: 40, size: 120, color: "#22d3ee", opacity: 0.2 }, { type: "grid", x: 0, y: 0, color: "#334155", opacity: 0.4 }] },
+    decorations: [{ type: "dots", x: 850, y: 50, color: "#818cf8", opacity: 0.4 }, { type: "dots", x: 50, y: 850, color: "#818cf8", opacity: 0.3 }] },
 
   // === BOLD (10) ===
-  { id: "bold-1", category: "bold", name: "Fire Gradient", preview: "🔥",
+  { id: "bold-1", category: "bold", name: "Fire Gradient",
     config: { background: "linear-gradient(135deg, #f97316 0%, #dc2626 50%, #7c2d12 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
     decorations: [{ type: "circle", x: -150, y: -150, size: 500, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 750, y: 650, size: 600, color: "#ffffff", opacity: 0.08 }] },
-  { id: "bold-2", category: "bold", name: "Electric Purple", preview: "⚡",
+  { id: "bold-2", category: "bold", name: "Electric Purple",
     config: { background: "linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
-    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 800, y: 700, size: 500, color: "#ffffff", opacity: 0.08 }] },
-  { id: "bold-3", category: "bold", name: "Ocean Depth", preview: "🐋",
+    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 800, y: 700, size: 500, color: "#ffffff", opacity: 0.08 }, { type: "circle", x: 400, y: 400, size: 300, color: "#ffffff", opacity: 0.05 }] },
+  { id: "bold-3", category: "bold", name: "Ocean Depth",
     config: { background: "linear-gradient(180deg, #0ea5e9 0%, #1e40af 50%, #1e1b4b 100%)", textColor: "#ffffff", accentColor: "#38bdf8" },
-    decorations: [{ type: "wave", y: 800, color: "#ffffff", opacity: 0.1 }, { type: "wave", y: 860, color: "#ffffff", opacity: 0.15 }] },
-  { id: "bold-4", category: "bold", name: "Toxic Green", preview: "☢️",
+    decorations: [{ type: "wave", y: 750, color: "#ffffff", opacity: 0.08 }, { type: "wave", y: 820, color: "#ffffff", opacity: 0.12 }, { type: "wave", y: 890, color: "#ffffff", opacity: 0.18 }] },
+  { id: "bold-4", category: "bold", name: "Toxic Green",
     config: { background: "linear-gradient(135deg, #22c55e 0%, #15803d 50%, #14532d 100%)", textColor: "#ffffff", accentColor: "#86efac" },
-    decorations: [{ type: "circle", x: 400, y: -100, size: 350, color: "#ffffff", opacity: 0.1 }, { type: "dots", x: 50, y: 850, color: "#86efac", opacity: 0.4 }] },
-  { id: "bold-5", category: "bold", name: "Sunset Blaze", preview: "🌆",
+    decorations: [{ type: "circle", x: 400, y: -100, size: 350, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: -100, y: 600, size: 400, color: "#86efac", opacity: 0.15 }] },
+  { id: "bold-5", category: "bold", name: "Sunset Blaze",
     config: { background: "linear-gradient(180deg, #fbbf24 0%, #f97316 30%, #dc2626 60%, #7c2d12 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
-    decorations: [{ type: "circle", x: 440, y: -250, size: 700, color: "#ffffff", opacity: 0.15 }] },
-  { id: "bold-6", category: "bold", name: "Cyber Pink", preview: "🎀",
+    decorations: [{ type: "circle", x: 440, y: -250, size: 700, color: "#ffffff", opacity: 0.15 }, { type: "circle", x: 200, y: 800, size: 300, color: "#ffffff", opacity: 0.08 }] },
+  { id: "bold-6", category: "bold", name: "Cyber Pink",
     config: { background: "linear-gradient(135deg, #ec4899 0%, #be185d 50%, #831843 100%)", textColor: "#ffffff", accentColor: "#fce7f3" },
-    decorations: [{ type: "circle", x: -80, y: 700, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "line", x: 60, y: 100, width: 150, height: 5, color: "#fce7f3" }] },
-  { id: "bold-7", category: "bold", name: "Volcano", preview: "🌋",
-    config: { background: "linear-gradient(180deg, #ef4444 0%, #b91c1c 50%, #450a0a 100%)", textColor: "#ffffff", accentColor: "#fca5a5" },
-    decorations: [{ type: "circle", x: 350, y: 700, size: 500, color: "#fca5a5", opacity: 0.15 }] },
-  { id: "bold-8", category: "bold", name: "Aurora", preview: "🌌",
+    decorations: [{ type: "circle", x: -80, y: 700, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 800, y: -100, size: 350, color: "#fce7f3", opacity: 0.12 }] },
+  { id: "bold-7", category: "bold", name: "Aurora",
     config: { background: "linear-gradient(135deg, #06b6d4 0%, #8b5cf6 50%, #ec4899 100%)", textColor: "#ffffff", accentColor: "#e0e7ff" },
-    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.15 }, { type: "circle", x: 800, y: 800, size: 400, color: "#ffffff", opacity: 0.1 }] },
-  { id: "bold-9", category: "bold", name: "Thunder", preview: "⛈️",
-    config: { background: "linear-gradient(180deg, #475569 0%, #1e293b 50%, #0f172a 100%)", textColor: "#ffffff", accentColor: "#fbbf24" },
-    decorations: [{ type: "line", x: 200, y: 150, width: 4, height: 200, color: "#fbbf24" }, { type: "line", x: 850, y: 700, width: 4, height: 150, color: "#fbbf24" }] },
-  { id: "bold-10", category: "bold", name: "Magma", preview: "🔴",
+    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.15 }, { type: "circle", x: 800, y: 800, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 400, y: 300, size: 250, color: "#ffffff", opacity: 0.08 }] },
+  { id: "bold-8", category: "bold", name: "Magma",
     config: { background: "linear-gradient(135deg, #fbbf24 0%, #f97316 30%, #dc2626 70%, #450a0a 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
-    decorations: [{ type: "circle", x: 300, y: 300, size: 500, color: "#ffffff", opacity: 0.1 }] },
+    decorations: [{ type: "circle", x: 300, y: 300, size: 500, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 700, y: 700, size: 400, color: "#ff6b35", opacity: 0.15 }] },
+  { id: "bold-9", category: "bold", name: "Deep Space",
+    config: { background: "linear-gradient(180deg, #312e81 0%, #1e1b4b 50%, #0c0a1d 100%)", textColor: "#ffffff", accentColor: "#a5b4fc" },
+    decorations: [{ type: "dots", x: 100, y: 100, color: "#ffffff", opacity: 0.3 }, { type: "dots", x: 800, y: 300, color: "#a5b4fc", opacity: 0.4 }, { type: "dots", x: 500, y: 800, color: "#ffffff", opacity: 0.2 }] },
+  { id: "bold-10", category: "bold", name: "Tropical",
+    config: { background: "linear-gradient(135deg, #14b8a6 0%, #0891b2 50%, #1e40af 100%)", textColor: "#ffffff", accentColor: "#5eead4" },
+    decorations: [{ type: "circle", x: -150, y: -150, size: 500, color: "#ffffff", opacity: 0.12 }, { type: "wave", y: 850, color: "#ffffff", opacity: 0.15 }] },
 
   // === MINIMAL (10) ===
-  { id: "minimal-1", category: "minimal", name: "Clean White", preview: "⬜",
+  { id: "minimal-1", category: "minimal", name: "Clean White",
     config: { background: "#ffffff", textColor: "#111827", accentColor: "#6366f1" },
     decorations: [{ type: "line", x: 440, y: 880, width: 200, height: 3, color: "#6366f1" }] },
-  { id: "minimal-2", category: "minimal", name: "Soft Gray", preview: "🔲",
+  { id: "minimal-2", category: "minimal", name: "Soft Gray",
     config: { background: "#f9fafb", textColor: "#1f2937", accentColor: "#6b7280" },
     decorations: [{ type: "border", x: 50, y: 50, width: 980, height: 980, color: "#e5e7eb", thickness: 1 }] },
-  { id: "minimal-3", category: "minimal", name: "Paper", preview: "📄",
+  { id: "minimal-3", category: "minimal", name: "Paper",
     config: { background: "#fffbeb", textColor: "#78350f", accentColor: "#b45309" },
-    decorations: [{ type: "line", x: 60, y: 120, width: 80, height: 3, color: "#b45309" }] },
-  { id: "minimal-4", category: "minimal", name: "Slate", preview: "🪨",
+    decorations: [{ type: "line", x: 60, y: 120, width: 80, height: 3, color: "#b45309" }, { type: "line", x: 940, y: 920, width: 80, height: 3, color: "#b45309" }] },
+  { id: "minimal-4", category: "minimal", name: "Slate",
     config: { background: "#f1f5f9", textColor: "#0f172a", accentColor: "#475569" },
-    decorations: [{ type: "line", x: 480, y: 900, width: 120, height: 2, color: "#475569" }] },
-  { id: "minimal-5", category: "minimal", name: "Ivory", preview: "🦴",
+    decorations: [{ type: "corner", position: "top-left", size: 40, color: "#475569" }, { type: "corner", position: "bottom-right", size: 40, color: "#475569" }] },
+  { id: "minimal-5", category: "minimal", name: "Ivory",
     config: { background: "#fefce8", textColor: "#365314", accentColor: "#65a30d" },
     decorations: [{ type: "border", x: 40, y: 40, width: 1000, height: 1000, color: "#d9f99d", thickness: 2 }] },
-  { id: "minimal-6", category: "minimal", name: "Cloud", preview: "☁️",
+  { id: "minimal-6", category: "minimal", name: "Cloud",
     config: { background: "#f0f9ff", textColor: "#0c4a6e", accentColor: "#0284c7" },
-    decorations: [{ type: "line", x: 60, y: 900, width: 100, height: 3, color: "#0284c7" }] },
-  { id: "minimal-7", category: "minimal", name: "Cream", preview: "🍦",
+    decorations: [{ type: "circle", x: 800, y: -100, size: 300, color: "#bae6fd", opacity: 0.5 }] },
+  { id: "minimal-7", category: "minimal", name: "Cream",
     config: { background: "#fef7ed", textColor: "#7c2d12", accentColor: "#c2410c" },
     decorations: [{ type: "line", x: 440, y: 100, width: 200, height: 2, color: "#c2410c" }, { type: "line", x: 440, y: 950, width: 200, height: 2, color: "#c2410c" }] },
-  { id: "minimal-8", category: "minimal", name: "Snow", preview: "❄️",
+  { id: "minimal-8", category: "minimal", name: "Snow",
     config: { background: "#ffffff", textColor: "#1e3a5f", accentColor: "#0ea5e9" },
     decorations: [{ type: "corner", position: "top-left", size: 50, color: "#0ea5e9" }, { type: "corner", position: "bottom-right", size: 50, color: "#0ea5e9" }] },
-  { id: "minimal-9", category: "minimal", name: "Lavender", preview: "💜",
+  { id: "minimal-9", category: "minimal", name: "Lavender",
     config: { background: "#faf5ff", textColor: "#581c87", accentColor: "#9333ea" },
-    decorations: [{ type: "line", x: 60, y: 900, width: 150, height: 3, color: "#9333ea" }] },
-  { id: "minimal-10", category: "minimal", name: "Mint", preview: "🌿",
+    decorations: [{ type: "circle", x: -150, y: -150, size: 400, color: "#e9d5ff", opacity: 0.5 }] },
+  { id: "minimal-10", category: "minimal", name: "Mint",
     config: { background: "#f0fdf4", textColor: "#14532d", accentColor: "#22c55e" },
-    decorations: [{ type: "border", x: 60, y: 60, width: 960, height: 960, color: "#bbf7d0", thickness: 2 }] },
+    decorations: [{ type: "circle", x: 750, y: 750, size: 400, color: "#bbf7d0", opacity: 0.4 }] },
 
   // === NEON (10) ===
-  { id: "neon-1", category: "neon", name: "Cyber Green", preview: "💚",
+  { id: "neon-1", category: "neon", name: "Cyber Green",
     config: { background: "#0a0a0a", textColor: "#ffffff", accentColor: "#00ff88" },
     decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#00ff88", opacity: 0.5 }, { type: "corner", position: "top-left", size: 80, color: "#00ff88" }, { type: "corner", position: "bottom-right", size: 80, color: "#00ff88" }] },
-  { id: "neon-2", category: "neon", name: "Hot Pink", preview: "💗",
+  { id: "neon-2", category: "neon", name: "Hot Pink",
     config: { background: "#0f0f0f", textColor: "#ffffff", accentColor: "#ff00ff" },
-    decorations: [{ type: "glow-border", x: 40, y: 40, width: 1000, height: 1000, color: "#ff00ff", opacity: 0.4 }] },
-  { id: "neon-3", category: "neon", name: "Electric Blue", preview: "💙",
+    decorations: [{ type: "glow-border", x: 40, y: 40, width: 1000, height: 1000, color: "#ff00ff", opacity: 0.4 }, { type: "circle", x: 800, y: -100, size: 300, color: "#ff00ff", opacity: 0.15 }] },
+  { id: "neon-3", category: "neon", name: "Electric Blue",
     config: { background: "#050505", textColor: "#ffffff", accentColor: "#00d4ff" },
-    decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#00d4ff", opacity: 0.5 }, { type: "line", x: 60, y: 100, width: 150, height: 3, color: "#00d4ff" }] },
-  { id: "neon-4", category: "neon", name: "Sunset Neon", preview: "🧡",
+    decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#00d4ff", opacity: 0.5 }, { type: "grid", x: 0, y: 0, color: "#00d4ff", opacity: 0.08 }] },
+  { id: "neon-4", category: "neon", name: "Sunset Neon",
     config: { background: "#0a0a0a", textColor: "#ffffff", accentColor: "#ff6b00" },
     decorations: [{ type: "corner", position: "top-left", size: 100, color: "#ff6b00" }, { type: "corner", position: "bottom-right", size: 100, color: "#ff00ff" }, { type: "glow-border", x: 50, y: 50, width: 980, height: 980, color: "#ff6b00", opacity: 0.3 }] },
-  { id: "neon-5", category: "neon", name: "Matrix", preview: "🟢",
+  { id: "neon-5", category: "neon", name: "Matrix",
     config: { background: "#000000", textColor: "#00ff00", accentColor: "#00ff00" },
-    decorations: [{ type: "grid", x: 0, y: 0, color: "#00ff00", opacity: 0.15 }] },
-  { id: "neon-6", category: "neon", name: "Purple Rain", preview: "🟣",
+    decorations: [{ type: "grid", x: 0, y: 0, color: "#00ff00", opacity: 0.15 }, { type: "line", x: 60, y: 100, width: 3, height: 200, color: "#00ff00" }] },
+  { id: "neon-6", category: "neon", name: "Purple Rain",
     config: { background: "#0a0010", textColor: "#ffffff", accentColor: "#bf00ff" },
-    decorations: [{ type: "glow-border", x: 35, y: 35, width: 1010, height: 1010, color: "#bf00ff", opacity: 0.45 }, { type: "dots", x: 850, y: 50, color: "#bf00ff", opacity: 0.5 }] },
-  { id: "neon-7", category: "neon", name: "Tron", preview: "🔵",
+    decorations: [{ type: "glow-border", x: 35, y: 35, width: 1010, height: 1010, color: "#bf00ff", opacity: 0.45 }, { type: "circle", x: 700, y: -100, size: 400, color: "#bf00ff", opacity: 0.1 }] },
+  { id: "neon-7", category: "neon", name: "Tron",
     config: { background: "#000814", textColor: "#ffffff", accentColor: "#00b4d8" },
-    decorations: [{ type: "border", x: 40, y: 40, width: 1000, height: 1000, color: "#00b4d8", thickness: 2 }, { type: "corner", position: "top-left", size: 60, color: "#00b4d8" }, { type: "corner", position: "top-right", size: 60, color: "#00b4d8" }, { type: "corner", position: "bottom-left", size: 60, color: "#00b4d8" }, { type: "corner", position: "bottom-right", size: 60, color: "#00b4d8" }] },
-  { id: "neon-8", category: "neon", name: "Vapor Wave", preview: "🌴",
+    decorations: [{ type: "border", x: 40, y: 40, width: 1000, height: 1000, color: "#00b4d8", thickness: 2 }, { type: "corner", position: "top-left", size: 60, color: "#00b4d8" }, { type: "corner", position: "bottom-right", size: 60, color: "#00b4d8" }] },
+  { id: "neon-8", category: "neon", name: "Vapor Wave",
     config: { background: "linear-gradient(180deg, #1a0030 0%, #2d1b4e 50%, #1a0030 100%)", textColor: "#ff71ce", accentColor: "#01cdfe" },
-    decorations: [{ type: "line", x: 0, y: 540, width: 1080, height: 2, color: "#ff71ce" }, { type: "circle", x: 400, y: -200, size: 500, color: "#ff71ce", opacity: 0.1 }] },
-  { id: "neon-9", category: "neon", name: "Laser Red", preview: "❤️",
+    decorations: [{ type: "line", x: 0, y: 540, width: 1080, height: 2, color: "#ff71ce" }, { type: "circle", x: 400, y: -200, size: 500, color: "#ff71ce", opacity: 0.1 }, { type: "grid", x: 0, y: 0, color: "#01cdfe", opacity: 0.05 }] },
+  { id: "neon-9", category: "neon", name: "Laser Red",
     config: { background: "#0a0000", textColor: "#ffffff", accentColor: "#ff0040" },
-    decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#ff0040", opacity: 0.5 }, { type: "line", x: 60, y: 950, width: 200, height: 3, color: "#ff0040" }] },
-  { id: "neon-10", category: "neon", name: "Dual Neon", preview: "💜",
+    decorations: [{ type: "glow-border", x: 30, y: 30, width: 1020, height: 1020, color: "#ff0040", opacity: 0.5 }, { type: "circle", x: -100, y: 700, size: 400, color: "#ff0040", opacity: 0.15 }] },
+  { id: "neon-10", category: "neon", name: "Dual Neon",
     config: { background: "#050505", textColor: "#ffffff", accentColor: "#00ff88" },
-    decorations: [{ type: "corner", position: "top-left", size: 100, color: "#00ff88" }, { type: "corner", position: "top-right", size: 100, color: "#ff00ff" }, { type: "corner", position: "bottom-left", size: 100, color: "#ff00ff" }, { type: "corner", position: "bottom-right", size: 100, color: "#00ff88" }] },
+    decorations: [{ type: "corner", position: "top-left", size: 100, color: "#00ff88" }, { type: "corner", position: "top-right", size: 100, color: "#ff00ff" }, { type: "corner", position: "bottom-left", size: 100, color: "#ff00ff" }, { type: "corner", position: "bottom-right", size: 100, color: "#00ff88" }, { type: "circle", x: 400, y: 400, size: 300, color: "#00ff88", opacity: 0.05 }] },
+
+  // === NATURE (10) ===
+  { id: "nature-1", category: "nature", name: "Forest Dawn",
+    config: { background: "linear-gradient(180deg, #fef3c7 0%, #a7f3d0 50%, #065f46 100%)", textColor: "#064e3b", accentColor: "#fbbf24" },
+    decorations: [{ type: "circle", x: 440, y: -300, size: 600, color: "#fef08a", opacity: 0.4 }, { type: "leaf", x: 50, y: 800, size: 150, color: "#10b981", opacity: 0.3 }, { type: "leaf", x: 900, y: 750, size: 120, color: "#059669", opacity: 0.25, rotate: 45 }] },
+  { id: "nature-2", category: "nature", name: "Ocean Sunset",
+    config: { background: "linear-gradient(180deg, #fcd34d 0%, #fb923c 30%, #0ea5e9 60%, #0369a1 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
+    decorations: [{ type: "circle", x: 440, y: -200, size: 500, color: "#ffffff", opacity: 0.3 }, { type: "wave", y: 700, color: "#0c4a6e", opacity: 0.2 }, { type: "wave", y: 780, color: "#0c4a6e", opacity: 0.3 }] },
+  { id: "nature-3", category: "nature", name: "Mountain Mist",
+    config: { background: "linear-gradient(180deg, #e0f2fe 0%, #94a3b8 50%, #475569 100%)", textColor: "#1e293b", accentColor: "#0284c7" },
+    decorations: [{ type: "triangle", x: 100, y: 600, size: 400, color: "#64748b", opacity: 0.3 }, { type: "triangle", x: 500, y: 500, size: 500, color: "#475569", opacity: 0.4 }, { type: "triangle", x: 700, y: 650, size: 350, color: "#94a3b8", opacity: 0.3 }] },
+  { id: "nature-4", category: "nature", name: "Spring Garden",
+    config: { background: "linear-gradient(135deg, #d9f99d 0%, #86efac 50%, #4ade80 100%)", textColor: "#14532d", accentColor: "#166534" },
+    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.3 }, { type: "leaf", x: 850, y: 100, size: 100, color: "#22c55e", opacity: 0.4 }, { type: "leaf", x: 100, y: 800, size: 120, color: "#16a34a", opacity: 0.35, rotate: -30 }] },
+  { id: "nature-5", category: "nature", name: "Desert Sand",
+    config: { background: "linear-gradient(180deg, #fef3c7 0%, #fde68a 30%, #d97706 70%, #92400e 100%)", textColor: "#78350f", accentColor: "#fef3c7" },
+    decorations: [{ type: "circle", x: 800, y: 50, size: 200, color: "#fef08a", opacity: 0.5 }, { type: "wave", y: 800, color: "#b45309", opacity: 0.2 }] },
+  { id: "nature-6", category: "nature", name: "Northern Lights",
+    config: { background: "linear-gradient(180deg, #0f172a 0%, #1e3a5f 30%, #134e4a 60%, #065f46 100%)", textColor: "#a7f3d0", accentColor: "#5eead4" },
+    decorations: [{ type: "wave", y: 200, color: "#22d3ee", opacity: 0.15 }, { type: "wave", y: 350, color: "#a78bfa", opacity: 0.12 }, { type: "wave", y: 500, color: "#34d399", opacity: 0.1 }, { type: "dots", x: 100, y: 50, color: "#ffffff", opacity: 0.4 }] },
+  { id: "nature-7", category: "nature", name: "Autumn Leaves",
+    config: { background: "linear-gradient(135deg, #fef3c7 0%, #fdba74 30%, #ea580c 70%, #7c2d12 100%)", textColor: "#ffffff", accentColor: "#fef3c7" },
+    decorations: [{ type: "leaf", x: 50, y: 50, size: 100, color: "#dc2626", opacity: 0.3 }, { type: "leaf", x: 900, y: 100, size: 80, color: "#ea580c", opacity: 0.35, rotate: 45 }, { type: "leaf", x: 800, y: 850, size: 120, color: "#b91c1c", opacity: 0.25, rotate: -20 }] },
+  { id: "nature-8", category: "nature", name: "Deep Ocean",
+    config: { background: "linear-gradient(180deg, #0ea5e9 0%, #0369a1 30%, #1e3a8a 60%, #0f172a 100%)", textColor: "#e0f2fe", accentColor: "#38bdf8" },
+    decorations: [{ type: "circle", x: 100, y: 700, size: 150, color: "#38bdf8", opacity: 0.2 }, { type: "circle", x: 800, y: 800, size: 100, color: "#22d3ee", opacity: 0.15 }, { type: "wave", y: 850, color: "#0369a1", opacity: 0.2 }] },
+  { id: "nature-9", category: "nature", name: "Rainforest",
+    config: { background: "linear-gradient(180deg, #86efac 0%, #22c55e 30%, #15803d 60%, #14532d 100%)", textColor: "#f0fdf4", accentColor: "#bbf7d0" },
+    decorations: [{ type: "leaf", x: 50, y: 100, size: 150, color: "#4ade80", opacity: 0.3 }, { type: "leaf", x: 880, y: 50, size: 130, color: "#22c55e", opacity: 0.35, rotate: 60 }, { type: "leaf", x: 900, y: 800, size: 140, color: "#16a34a", opacity: 0.25, rotate: 180 }] },
+  { id: "nature-10", category: "nature", name: "Cherry Blossom",
+    config: { background: "linear-gradient(180deg, #fce7f3 0%, #fbcfe8 50%, #f9a8d4 100%)", textColor: "#831843", accentColor: "#be185d" },
+    decorations: [{ type: "circle", x: 100, y: 100, size: 80, color: "#ec4899", opacity: 0.3 }, { type: "circle", x: 850, y: 150, size: 60, color: "#f472b6", opacity: 0.35 }, { type: "circle", x: 750, y: 800, size: 100, color: "#db2777", opacity: 0.25 }, { type: "circle", x: 200, y: 850, size: 70, color: "#ec4899", opacity: 0.3 }] },
+
+  // === FLORAL (10) ===
+  { id: "floral-1", category: "floral", name: "Rose Garden",
+    config: { background: "linear-gradient(135deg, #fce7f3 0%, #fbcfe8 50%, #f9a8d4 100%)", textColor: "#831843", accentColor: "#be185d" },
+    decorations: [{ type: "circle", x: 50, y: 50, size: 150, color: "#ec4899", opacity: 0.25 }, { type: "circle", x: 880, y: 80, size: 120, color: "#f472b6", opacity: 0.3 }, { type: "circle", x: 800, y: 850, size: 180, color: "#db2777", opacity: 0.2 }, { type: "circle", x: 100, y: 800, size: 140, color: "#ec4899", opacity: 0.25 }] },
+  { id: "floral-2", category: "floral", name: "Lavender Field",
+    config: { background: "linear-gradient(180deg, #e9d5ff 0%, #c4b5fd 50%, #a78bfa 100%)", textColor: "#4c1d95", accentColor: "#7c3aed" },
+    decorations: [{ type: "circle", x: 100, y: 100, size: 60, color: "#8b5cf6", opacity: 0.35 }, { type: "circle", x: 300, y: 50, size: 40, color: "#a78bfa", opacity: 0.4 }, { type: "circle", x: 800, y: 120, size: 70, color: "#8b5cf6", opacity: 0.3 }, { type: "circle", x: 900, y: 900, size: 80, color: "#a78bfa", opacity: 0.3 }] },
+  { id: "floral-3", category: "floral", name: "Sunflower",
+    config: { background: "linear-gradient(180deg, #fef9c3 0%, #fde047 50%, #facc15 100%)", textColor: "#713f12", accentColor: "#a16207" },
+    decorations: [{ type: "circle", x: 440, y: -100, size: 400, color: "#fbbf24", opacity: 0.4 }, { type: "circle", x: 440, y: -100, size: 300, color: "#f59e0b", opacity: 0.3 }, { type: "leaf", x: 50, y: 800, size: 120, color: "#65a30d", opacity: 0.3 }] },
+  { id: "floral-4", category: "floral", name: "Tulip",
+    config: { background: "linear-gradient(180deg, #fef2f2 0%, #fecaca 50%, #fca5a5 100%)", textColor: "#7f1d1d", accentColor: "#dc2626" },
+    decorations: [{ type: "circle", x: 100, y: 100, size: 100, color: "#ef4444", opacity: 0.25 }, { type: "circle", x: 850, y: 150, size: 120, color: "#f87171", opacity: 0.3 }, { type: "leaf", x: 50, y: 800, size: 100, color: "#22c55e", opacity: 0.25 }] },
+  { id: "floral-5", category: "floral", name: "Orchid",
+    config: { background: "linear-gradient(135deg, #fdf4ff 0%, #f5d0fe 50%, #e879f9 100%)", textColor: "#701a75", accentColor: "#a21caf" },
+    decorations: [{ type: "circle", x: 800, y: 100, size: 200, color: "#d946ef", opacity: 0.2 }, { type: "circle", x: 100, y: 750, size: 180, color: "#c026d3", opacity: 0.15 }] },
+  { id: "floral-6", category: "floral", name: "Daisy",
+    config: { background: "linear-gradient(180deg, #ffffff 0%, #fef9c3 50%, #fde68a 100%)", textColor: "#78350f", accentColor: "#b45309" },
+    decorations: [{ type: "circle", x: 100, y: 100, size: 80, color: "#ffffff", opacity: 0.8 }, { type: "circle", x: 100, y: 100, size: 30, color: "#fbbf24", opacity: 0.9 }, { type: "circle", x: 850, y: 800, size: 100, color: "#ffffff", opacity: 0.7 }, { type: "circle", x: 850, y: 800, size: 40, color: "#fbbf24", opacity: 0.9 }] },
+  { id: "floral-7", category: "floral", name: "Peony",
+    config: { background: "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #fda4af 100%)", textColor: "#881337", accentColor: "#e11d48" },
+    decorations: [{ type: "circle", x: 50, y: 50, size: 200, color: "#fb7185", opacity: 0.25 }, { type: "circle", x: 800, y: 100, size: 150, color: "#f43f5e", opacity: 0.2 }, { type: "circle", x: 750, y: 800, size: 220, color: "#e11d48", opacity: 0.15 }] },
+  { id: "floral-8", category: "floral", name: "Lotus",
+    config: { background: "linear-gradient(180deg, #ecfdf5 0%, #d1fae5 30%, #6ee7b7 70%, #34d399 100%)", textColor: "#064e3b", accentColor: "#059669" },
+    decorations: [{ type: "circle", x: 440, y: 750, size: 350, color: "#10b981", opacity: 0.2 }, { type: "circle", x: 440, y: 800, size: 250, color: "#34d399", opacity: 0.25 }, { type: "wave", y: 900, color: "#059669", opacity: 0.15 }] },
+  { id: "floral-9", category: "floral", name: "Hydrangea",
+    config: { background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 30%, #93c5fd 60%, #60a5fa 100%)", textColor: "#1e3a8a", accentColor: "#2563eb" },
+    decorations: [{ type: "circle", x: 50, y: 50, size: 100, color: "#3b82f6", opacity: 0.3 }, { type: "circle", x: 200, y: 100, size: 80, color: "#60a5fa", opacity: 0.35 }, { type: "circle", x: 800, y: 800, size: 120, color: "#2563eb", opacity: 0.25 }, { type: "circle", x: 900, y: 700, size: 90, color: "#3b82f6", opacity: 0.3 }] },
+  { id: "floral-10", category: "floral", name: "Wildflower",
+    config: { background: "linear-gradient(180deg, #fef3c7 0%, #d9f99d 50%, #86efac 100%)", textColor: "#365314", accentColor: "#65a30d" },
+    decorations: [{ type: "circle", x: 100, y: 150, size: 50, color: "#ec4899", opacity: 0.4 }, { type: "circle", x: 300, y: 80, size: 40, color: "#a855f7", opacity: 0.45 }, { type: "circle", x: 800, y: 100, size: 60, color: "#f472b6", opacity: 0.35 }, { type: "circle", x: 850, y: 850, size: 55, color: "#8b5cf6", opacity: 0.4 }, { type: "leaf", x: 50, y: 800, size: 100, color: "#22c55e", opacity: 0.3 }] },
+
+  // === TECH (10) ===
+  { id: "tech-1", category: "tech", name: "Circuit Board",
+    config: { background: "#0a1929", textColor: "#4fc3f7", accentColor: "#00e676" },
+    decorations: [{ type: "grid", x: 0, y: 0, color: "#1e3a5f", opacity: 0.5 }, { type: "line", x: 60, y: 100, width: 200, height: 2, color: "#00e676" }, { type: "line", x: 800, y: 900, width: 200, height: 2, color: "#4fc3f7" }, { type: "dots", x: 850, y: 50, color: "#00e676", opacity: 0.5 }] },
+  { id: "tech-2", category: "tech", name: "Data Stream",
+    config: { background: "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)", textColor: "#38bdf8", accentColor: "#22d3ee" },
+    decorations: [{ type: "line", x: 100, y: 0, width: 2, height: 1080, color: "#0ea5e9", opacity: 0.15 }, { type: "line", x: 300, y: 0, width: 2, height: 1080, color: "#22d3ee", opacity: 0.1 }, { type: "line", x: 700, y: 0, width: 2, height: 1080, color: "#0ea5e9", opacity: 0.12 }, { type: "line", x: 900, y: 0, width: 2, height: 1080, color: "#22d3ee", opacity: 0.15 }] },
+  { id: "tech-3", category: "tech", name: "Hologram",
+    config: { background: "linear-gradient(135deg, #0c0a1d 0%, #1a1333 50%, #0f172a 100%)", textColor: "#e0e7ff", accentColor: "#818cf8" },
+    decorations: [{ type: "circle", x: 440, y: 440, size: 400, color: "#6366f1", opacity: 0.1 }, { type: "circle", x: 440, y: 440, size: 300, color: "#818cf8", opacity: 0.08 }, { type: "circle", x: 440, y: 440, size: 200, color: "#a5b4fc", opacity: 0.06 }, { type: "grid", x: 0, y: 0, color: "#4f46e5", opacity: 0.1 }] },
+  { id: "tech-4", category: "tech", name: "Binary",
+    config: { background: "#000000", textColor: "#22c55e", accentColor: "#4ade80" },
+    decorations: [{ type: "grid", x: 0, y: 0, color: "#166534", opacity: 0.2 }, { type: "line", x: 60, y: 60, width: 3, height: 100, color: "#22c55e" }, { type: "line", x: 1000, y: 900, width: 3, height: 100, color: "#22c55e" }] },
+  { id: "tech-5", category: "tech", name: "AI Neural",
+    config: { background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)", textColor: "#e0e7ff", accentColor: "#a5b4fc" },
+    decorations: [{ type: "dots", x: 100, y: 100, color: "#818cf8", opacity: 0.5 }, { type: "dots", x: 500, y: 300, color: "#a5b4fc", opacity: 0.4 }, { type: "dots", x: 800, y: 600, color: "#818cf8", opacity: 0.45 }, { type: "line", x: 150, y: 150, width: 400, height: 2, color: "#6366f1", opacity: 0.3 }] },
+  { id: "tech-6", category: "tech", name: "Cyber Grid",
+    config: { background: "#030712", textColor: "#f0abfc", accentColor: "#e879f9" },
+    decorations: [{ type: "grid", x: 0, y: 0, color: "#701a75", opacity: 0.3 }, { type: "glow-border", x: 50, y: 50, width: 980, height: 980, color: "#d946ef", opacity: 0.3 }] },
+  { id: "tech-7", category: "tech", name: "Quantum",
+    config: { background: "linear-gradient(180deg, #020617 0%, #0f172a 50%, #1e293b 100%)", textColor: "#67e8f9", accentColor: "#22d3ee" },
+    decorations: [{ type: "circle", x: 200, y: 200, size: 100, color: "#06b6d4", opacity: 0.2 }, { type: "circle", x: 700, y: 300, size: 150, color: "#22d3ee", opacity: 0.15 }, { type: "circle", x: 400, y: 700, size: 120, color: "#67e8f9", opacity: 0.18 }, { type: "line", x: 250, y: 250, width: 500, height: 2, color: "#06b6d4", opacity: 0.2 }] },
+  { id: "tech-8", category: "tech", name: "Blockchain",
+    config: { background: "#0d1117", textColor: "#58a6ff", accentColor: "#1f6feb" },
+    decorations: [{ type: "border", x: 100, y: 100, width: 200, height: 200, color: "#1f6feb", thickness: 2 }, { type: "border", x: 400, y: 300, width: 200, height: 200, color: "#58a6ff", thickness: 2 }, { type: "border", x: 700, y: 700, width: 200, height: 200, color: "#1f6feb", thickness: 2 }, { type: "line", x: 200, y: 200, width: 300, height: 2, color: "#1f6feb", opacity: 0.3 }] },
+  { id: "tech-9", category: "tech", name: "Neon Code",
+    config: { background: "#0a0a0a", textColor: "#f472b6", accentColor: "#ec4899" },
+    decorations: [{ type: "line", x: 60, y: 100, width: 300, height: 2, color: "#ec4899" }, { type: "line", x: 60, y: 130, width: 200, height: 2, color: "#f472b6", opacity: 0.6 }, { type: "line", x: 60, y: 160, width: 250, height: 2, color: "#ec4899", opacity: 0.4 }, { type: "glow-border", x: 40, y: 40, width: 1000, height: 1000, color: "#ec4899", opacity: 0.2 }] },
+  { id: "tech-10", category: "tech", name: "Futuristic",
+    config: { background: "linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%)", textColor: "#ffffff", accentColor: "#00d9ff" },
+    decorations: [{ type: "corner", position: "top-left", size: 120, color: "#00d9ff" }, { type: "corner", position: "bottom-right", size: 120, color: "#00d9ff" }, { type: "line", x: 0, y: 540, width: 1080, height: 1, color: "#00d9ff", opacity: 0.3 }, { type: "grid", x: 0, y: 0, color: "#00d9ff", opacity: 0.05 }] },
+
+  // === BUSINESS (10) ===
+  { id: "business-1", category: "business", name: "Corporate Blue",
+    config: { background: "linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%)", textColor: "#ffffff", accentColor: "#93c5fd" },
+    decorations: [{ type: "circle", x: 750, y: -100, size: 400, color: "#3b82f6", opacity: 0.2 }, { type: "line", x: 60, y: 100, width: 120, height: 4, color: "#93c5fd" }] },
+  { id: "business-2", category: "business", name: "Executive",
+    config: { background: "linear-gradient(180deg, #1f2937 0%, #111827 100%)", textColor: "#f9fafb", accentColor: "#fbbf24" },
+    decorations: [{ type: "line", x: 60, y: 100, width: 100, height: 4, color: "#fbbf24" }, { type: "line", x: 920, y: 950, width: 100, height: 4, color: "#fbbf24" }] },
+  { id: "business-3", category: "business", name: "Startup",
+    config: { background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)", textColor: "#ffffff", accentColor: "#e0e7ff" },
+    decorations: [{ type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: 800, y: 700, size: 450, color: "#ffffff", opacity: 0.08 }] },
+  { id: "business-4", category: "business", name: "Finance",
+    config: { background: "linear-gradient(180deg, #064e3b 0%, #065f46 50%, #047857 100%)", textColor: "#ecfdf5", accentColor: "#34d399" },
+    decorations: [{ type: "line", x: 60, y: 100, width: 150, height: 4, color: "#34d399" }, { type: "circle", x: 800, y: -50, size: 300, color: "#10b981", opacity: 0.15 }] },
+  { id: "business-5", category: "business", name: "Consulting",
+    config: { background: "#ffffff", textColor: "#1f2937", accentColor: "#2563eb" },
+    decorations: [{ type: "border", x: 40, y: 40, width: 1000, height: 1000, color: "#2563eb", thickness: 3 }, { type: "line", x: 60, y: 100, width: 80, height: 4, color: "#2563eb" }] },
+  { id: "business-6", category: "business", name: "Law Firm",
+    config: { background: "linear-gradient(180deg, #292524 0%, #1c1917 100%)", textColor: "#fafaf9", accentColor: "#b45309" },
+    decorations: [{ type: "line", x: 60, y: 100, width: 100, height: 3, color: "#b45309" }, { type: "border", x: 50, y: 50, width: 980, height: 980, color: "#44403c", thickness: 1 }] },
+  { id: "business-7", category: "business", name: "Real Estate",
+    config: { background: "linear-gradient(135deg, #78350f 0%, #92400e 50%, #b45309 100%)", textColor: "#fef3c7", accentColor: "#fbbf24" },
+    decorations: [{ type: "circle", x: 700, y: -100, size: 400, color: "#fbbf24", opacity: 0.15 }, { type: "line", x: 60, y: 950, width: 150, height: 4, color: "#fbbf24" }] },
+  { id: "business-8", category: "business", name: "Healthcare",
+    config: { background: "linear-gradient(180deg, #0891b2 0%, #0e7490 50%, #155e75 100%)", textColor: "#ecfeff", accentColor: "#67e8f9" },
+    decorations: [{ type: "circle", x: -100, y: 700, size: 400, color: "#22d3ee", opacity: 0.15 }, { type: "line", x: 60, y: 100, width: 120, height: 4, color: "#67e8f9" }] },
+  { id: "business-9", category: "business", name: "Marketing",
+    config: { background: "linear-gradient(135deg, #dc2626 0%, #e11d48 50%, #be185d 100%)", textColor: "#ffffff", accentColor: "#fecdd3" },
+    decorations: [{ type: "circle", x: 800, y: 800, size: 500, color: "#ffffff", opacity: 0.1 }, { type: "circle", x: -100, y: -100, size: 400, color: "#ffffff", opacity: 0.08 }] },
+  { id: "business-10", category: "business", name: "Education",
+    config: { background: "linear-gradient(180deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%)", textColor: "#dbeafe", accentColor: "#fbbf24" },
+    decorations: [{ type: "circle", x: 800, y: 50, size: 250, color: "#3b82f6", opacity: 0.2 }, { type: "line", x: 60, y: 100, width: 100, height: 4, color: "#fbbf24" }, { type: "line", x: 60, y: 950, width: 100, height: 4, color: "#fbbf24" }] },
 ];
 
 const CARD_SIZES = [
@@ -774,6 +873,26 @@ export default function TemplatesPage() {
           />
         );
 
+      case "triangle":
+        const triSize = (dec.size || 200) * s;
+        return (
+          <svg
+            key={index}
+            style={{
+              ...baseStyle,
+              left: (dec.x || 0) * s,
+              top: (dec.y || 0) * s,
+              width: triSize,
+              height: triSize * 0.866,
+              opacity: dec.opacity || 0.3,
+            }}
+            viewBox="0 0 100 87"
+            preserveAspectRatio="none"
+          >
+            <polygon points="50,0 100,87 0,87" fill={dec.color} />
+          </svg>
+        );
+
       default:
         return null;
     }
@@ -887,19 +1006,18 @@ export default function TemplatesPage() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all flex items-center gap-1 ${
+                  className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all ${
                     selectedCategory === cat.id
                       ? "bg-purple-500 text-white"
                       : "bg-white/5 text-gray-400 hover:bg-white/10"
                   }`}
                 >
-                  <span>{cat.icon}</span>
-                  <span>{cat.name}</span>
+                  {cat.name}
                 </button>
               ))}
             </div>
 
-            {/* Template Grid */}
+            {/* Template Grid - Real Previews */}
             <div className="grid grid-cols-5 gap-2">
               {filteredTemplates.map((template) => (
                 <button
@@ -911,8 +1029,166 @@ export default function TemplatesPage() {
                   title={template.name}
                   style={{ background: template.config.background }}
                 >
-                  <div className="absolute inset-0 flex items-center justify-center text-lg">
-                    {template.preview}
+                  {/* Mini decorations preview */}
+                  {template.decorations?.map((dec, i) => {
+                    const miniScale = 0.05;
+                    if (dec.type === "circle") {
+                      return (
+                        <div
+                          key={i}
+                          className="absolute rounded-full"
+                          style={{
+                            left: (dec.x || 0) * miniScale,
+                            top: (dec.y || 0) * miniScale,
+                            width: (dec.size || 100) * miniScale,
+                            height: (dec.size || 100) * miniScale,
+                            background: dec.color,
+                            opacity: dec.opacity || 0.2,
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "line") {
+                      return (
+                        <div
+                          key={i}
+                          className="absolute"
+                          style={{
+                            left: (dec.x || 0) * miniScale,
+                            top: (dec.y || 0) * miniScale,
+                            width: (dec.width || 100) * miniScale,
+                            height: Math.max(1, (dec.height || 4) * miniScale),
+                            background: dec.color,
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "corner") {
+                      const size = (dec.size || 60) * miniScale;
+                      return (
+                        <div
+                          key={i}
+                          className="absolute"
+                          style={{
+                            ...(dec.position === "top-left" && { top: 2, left: 2 }),
+                            ...(dec.position === "top-right" && { top: 2, right: 2 }),
+                            ...(dec.position === "bottom-right" && { bottom: 2, right: 2 }),
+                            ...(dec.position === "bottom-left" && { bottom: 2, left: 2 }),
+                            width: size,
+                            height: size,
+                            borderTop: (dec.position === "top-left" || dec.position === "top-right") ? `1px solid ${dec.color}` : "none",
+                            borderBottom: (dec.position === "bottom-left" || dec.position === "bottom-right") ? `1px solid ${dec.color}` : "none",
+                            borderLeft: (dec.position === "top-left" || dec.position === "bottom-left") ? `1px solid ${dec.color}` : "none",
+                            borderRight: (dec.position === "top-right" || dec.position === "bottom-right") ? `1px solid ${dec.color}` : "none",
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "border" || dec.type === "glow-border") {
+                      return (
+                        <div
+                          key={i}
+                          className="absolute"
+                          style={{
+                            left: (dec.x || 0) * miniScale,
+                            top: (dec.y || 0) * miniScale,
+                            width: (dec.width || 100) * miniScale,
+                            height: (dec.height || 100) * miniScale,
+                            border: `1px solid ${dec.color}`,
+                            opacity: dec.opacity || 0.5,
+                            boxShadow: dec.type === "glow-border" ? `0 0 4px ${dec.color}` : "none",
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "wave") {
+                      return (
+                        <div
+                          key={i}
+                          className="absolute left-0 right-0"
+                          style={{
+                            top: (dec.y || 800) * miniScale,
+                            height: 4,
+                            background: dec.color,
+                            opacity: dec.opacity || 0.2,
+                            borderRadius: 2,
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "dots") {
+                      return (
+                        <div
+                          key={i}
+                          className="absolute"
+                          style={{
+                            left: (dec.x || 0) * miniScale,
+                            top: (dec.y || 0) * miniScale,
+                            width: 4,
+                            height: 4,
+                            background: dec.color,
+                            borderRadius: "50%",
+                            opacity: dec.opacity || 0.4,
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "grid") {
+                      return (
+                        <div
+                          key={i}
+                          className="absolute inset-0"
+                          style={{
+                            backgroundImage: `linear-gradient(${dec.color} 1px, transparent 1px), linear-gradient(90deg, ${dec.color} 1px, transparent 1px)`,
+                            backgroundSize: "4px 4px",
+                            opacity: dec.opacity || 0.15,
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "leaf") {
+                      return (
+                        <div
+                          key={i}
+                          className="absolute rounded-full"
+                          style={{
+                            left: (dec.x || 0) * miniScale,
+                            top: (dec.y || 0) * miniScale,
+                            width: (dec.size || 80) * miniScale * 0.5,
+                            height: (dec.size || 80) * miniScale,
+                            background: dec.color,
+                            opacity: dec.opacity || 0.3,
+                            transform: `rotate(${dec.rotate || 0}deg)`,
+                            borderRadius: "50% 0 50% 0",
+                          }}
+                        />
+                      );
+                    }
+                    if (dec.type === "triangle") {
+                      const triMiniSize = (dec.size || 200) * miniScale;
+                      return (
+                        <div
+                          key={i}
+                          className="absolute"
+                          style={{
+                            left: (dec.x || 0) * miniScale,
+                            top: (dec.y || 0) * miniScale,
+                            width: 0,
+                            height: 0,
+                            borderLeft: `${triMiniSize / 2}px solid transparent`,
+                            borderRight: `${triMiniSize / 2}px solid transparent`,
+                            borderBottom: `${triMiniSize * 0.866}px solid ${dec.color}`,
+                            opacity: dec.opacity || 0.3,
+                          }}
+                        />
+                      );
+                    }
+                    return null;
+                  })}
+                  {/* Text preview lines */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-1">
+                    <div className="w-3/4 h-0.5 rounded mb-0.5" style={{ background: template.config.textColor, opacity: 0.6 }} />
+                    <div className="w-1/2 h-0.5 rounded" style={{ background: template.config.textColor, opacity: 0.4 }} />
                   </div>
                 </button>
               ))}

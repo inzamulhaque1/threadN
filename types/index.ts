@@ -406,6 +406,20 @@ export const ACHIEVEMENTS: Record<string, IAchievement> = {
   },
 };
 
+// Shared Card Types
+export interface ISharedCard {
+  _id: string;
+  uniqueId: string;
+  userId: string | null;
+  imageData: string;
+  title: string;
+  description: string;
+  templateName: string;
+  views: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Platform Content Types
 export interface IPlatformContent {
   platform: Platform;

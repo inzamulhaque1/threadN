@@ -23,6 +23,12 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  Share2,
+  Link2,
+  Twitter,
+  Facebook,
+  Linkedin,
+  Loader2,
 } from "lucide-react";
 import { Button, Card, Input, Textarea } from "@/components/ui";
 import { toPng, toJpeg } from "html-to-image";
@@ -518,6 +524,13 @@ export default function TemplatesPage() {
   const [exportSuccess, setExportSuccess] = useState(false);
   const [exportFormat, setExportFormat] = useState<"png" | "jpg">("png");
 
+  // Sharing
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedImage, setCopiedImage] = useState(false);
+
   // Preview dimensions
   const previewMaxWidth = 400;
   const aspectRatio = selectedSize.height / selectedSize.width;
@@ -765,6 +778,138 @@ export default function TemplatesPage() {
 
     setIsExporting(false);
     setSelectedId(prevSelected);
+  };
+
+  // Copy image to clipboard
+  const handleCopyToClipboard = async () => {
+    if (!cardRef.current) return;
+
+    const prevSelected = selectedId;
+    setSelectedId(null);
+    setCopiedImage(false);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    try {
+      const exportScale = selectedSize.width / cardRef.current.offsetWidth;
+      const dataUrl = await toPng(cardRef.current, {
+        width: selectedSize.width,
+        height: selectedSize.height,
+        style: {
+          transform: `scale(${exportScale})`,
+          transformOrigin: "top left",
+        },
+        pixelRatio: 1,
+      });
+
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+
+      // Copy to clipboard
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+
+      setCopiedImage(true);
+      setTimeout(() => setCopiedImage(false), 2000);
+    } catch (err) {
+      console.error("Copy to clipboard failed:", err);
+      alert("Failed to copy image. Please try downloading instead.");
+    }
+
+    setSelectedId(prevSelected);
+  };
+
+  // Share card via link
+  const handleShare = async () => {
+    if (!cardRef.current) return;
+
+    const prevSelected = selectedId;
+    setSelectedId(null);
+    setIsSharing(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    try {
+      const exportScale = selectedSize.width / cardRef.current.offsetWidth;
+      const imageData = await toPng(cardRef.current, {
+        width: selectedSize.width,
+        height: selectedSize.height,
+        style: {
+          transform: `scale(${exportScale})`,
+          transformOrigin: "top left",
+        },
+        pixelRatio: 1,
+      });
+
+      // Get title from hook text element
+      const hookElement = elements.find((el) => el.id === "hook-text");
+      const title = hookElement?.content?.split("\n")[0] || "My Content Card";
+      const description = selectedThread?.body?.slice(0, 200) || "";
+
+      const res = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageData,
+          title,
+          description,
+          templateName: selectedTemplate.name,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setShareUrl(data.data.shareUrl);
+        setShowShareModal(true);
+      } else {
+        alert(data.error || "Failed to create share link");
+      }
+    } catch (err) {
+      console.error("Share failed:", err);
+      alert("Failed to create share link. Please try again.");
+    }
+
+    setIsSharing(false);
+    setSelectedId(prevSelected);
+  };
+
+  // Copy share link
+  const handleCopyShareLink = async () => {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  // Social share functions
+  const shareToTwitter = () => {
+    if (!shareUrl) return;
+    const hookElement = elements.find((el) => el.id === "hook-text");
+    const text = encodeURIComponent(hookElement?.content?.split("\n")[0] || "Check out my content!");
+    const url = encodeURIComponent(shareUrl);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank");
+  };
+
+  const shareToFacebook = () => {
+    if (!shareUrl) return;
+    const url = encodeURIComponent(shareUrl);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank");
+  };
+
+  const shareToLinkedIn = () => {
+    if (!shareUrl) return;
+    const url = encodeURIComponent(shareUrl);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, "_blank");
+  };
+
+  const shareToWhatsApp = () => {
+    if (!shareUrl) return;
+    const hookElement = elements.find((el) => el.id === "hook-text");
+    const text = encodeURIComponent(`${hookElement?.content?.split("\n")[0] || "Check out my content!"} ${shareUrl}`);
+    window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
   // Render decorations
@@ -1041,30 +1186,43 @@ export default function TemplatesPage() {
           <p className="text-gray-400 text-sm">Click to select, drag to move, corners to resize</p>
         </div>
         <div className="flex items-center gap-2">
-          {exportSuccess ? (
-            <Button size="lg" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25">
-              <Check className="w-5 h-5" /> Downloaded!
-            </Button>
-          ) : (
-            <>
-              <Button
-                onClick={() => handleExport("png")}
-                isLoading={isExporting && exportFormat === "png"}
-                disabled={isExporting}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
-              >
-                <Download className="w-4 h-4" /> PNG
-              </Button>
-              <Button
-                onClick={() => handleExport("jpg")}
-                isLoading={isExporting && exportFormat === "jpg"}
-                disabled={isExporting}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-105"
-              >
-                <Download className="w-4 h-4" /> JPG
-              </Button>
-            </>
-          )}
+          {/* Download Buttons */}
+          <Button
+            onClick={() => handleExport("png")}
+            isLoading={isExporting && exportFormat === "png"}
+            disabled={isExporting || isSharing}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
+          >
+            <Download className="w-4 h-4" /> PNG
+          </Button>
+          <Button
+            onClick={() => handleExport("jpg")}
+            isLoading={isExporting && exportFormat === "jpg"}
+            disabled={isExporting || isSharing}
+            className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-105"
+          >
+            <Download className="w-4 h-4" /> JPG
+          </Button>
+
+          {/* Copy to Clipboard */}
+          <Button
+            onClick={handleCopyToClipboard}
+            disabled={isExporting || isSharing}
+            className={`${copiedImage ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-gradient-to-r from-amber-500 to-orange-500"} text-white shadow-lg hover:scale-105`}
+          >
+            {copiedImage ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copiedImage ? "Copied!" : "Copy"}
+          </Button>
+
+          {/* Share Button */}
+          <Button
+            onClick={handleShare}
+            disabled={isExporting || isSharing}
+            className="bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg shadow-green-500/25 hover:shadow-green-500/40 hover:scale-105"
+          >
+            {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+            Share
+          </Button>
         </div>
       </div>
 
@@ -1659,6 +1817,90 @@ export default function TemplatesPage() {
           </Card>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && shareUrl && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowShareModal(false)}>
+          <div className="bg-[#12121a] border border-purple-500/20 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl shadow-purple-500/10" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Share2 className="w-5 h-5 text-purple-400" />
+                Share Your Card
+              </h2>
+              <button onClick={() => setShowShareModal(false)} className="text-gray-400 hover:text-white">
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Share Link */}
+            <div className="mb-6">
+              <label className="text-sm text-gray-400 mb-2 block">Share Link</label>
+              <div className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
+                <Link2 className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                <input
+                  type="text"
+                  value={shareUrl}
+                  readOnly
+                  className="flex-1 bg-transparent text-gray-300 text-sm outline-none"
+                />
+                <button
+                  onClick={handleCopyShareLink}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                    copiedLink
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
+                  }`}
+                >
+                  {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copiedLink ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            </div>
+
+            {/* Social Share Buttons */}
+            <div className="space-y-3">
+              <label className="text-sm text-gray-400 block">Share on Social Media</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={shareToTwitter}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1DA1F2]/20 hover:bg-[#1DA1F2]/30 border border-[#1DA1F2]/30 text-[#1DA1F2] rounded-xl font-medium transition"
+                >
+                  <Twitter className="w-5 h-5" />
+                  Twitter
+                </button>
+                <button
+                  onClick={shareToFacebook}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[#1877F2]/20 hover:bg-[#1877F2]/30 border border-[#1877F2]/30 text-[#1877F2] rounded-xl font-medium transition"
+                >
+                  <Facebook className="w-5 h-5" />
+                  Facebook
+                </button>
+                <button
+                  onClick={shareToLinkedIn}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/30 border border-[#0A66C2]/30 text-[#0A66C2] rounded-xl font-medium transition"
+                >
+                  <Linkedin className="w-5 h-5" />
+                  LinkedIn
+                </button>
+                <button
+                  onClick={shareToWhatsApp}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/30 text-[#25D366] rounded-xl font-medium transition"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  WhatsApp
+                </button>
+              </div>
+            </div>
+
+            {/* Info */}
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              Anyone with the link can view and download your card
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

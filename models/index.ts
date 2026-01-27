@@ -8,3 +8,4 @@ export { default as Collection } from "./Collection";
 export { default as Favorite } from "./Favorite";
 export { default as UserAchievement } from "./UserAchievement";
 export { default as UserStreak } from "./UserStreak";
+export { default as SharedCard } from "./SharedCard";

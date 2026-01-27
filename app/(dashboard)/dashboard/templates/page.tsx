@@ -1535,7 +1535,7 @@ export default function TemplatesPage() {
                     ...(watermark.position === "bottom-left" && { bottom: 25 * scale, left: 25 * scale }),
                     ...(watermark.position === "bottom-center" && { bottom: 25 * scale, left: "50%", transform: "translateX(-50%)" }),
                     ...(watermark.position === "top-right" && { top: 25 * scale, right: 25 * scale }),
-                    fontSize: 16 * scale,
+                    fontSize: 18 * scale,
                     color: watermark.color,
                     opacity: 0.7,
                     fontWeight: 500,

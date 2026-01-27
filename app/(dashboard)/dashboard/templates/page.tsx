@@ -25,7 +25,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { Button, Card, Input, Textarea } from "@/components/ui";
-import { toPng } from "html-to-image";
+import { toPng, toJpeg } from "html-to-image";
 import { userApi } from "@/lib/api";
 
 // Template Categories
@@ -516,6 +516,7 @@ export default function TemplatesPage() {
   // Export
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [exportFormat, setExportFormat] = useState<"png" | "jpg">("png");
 
   // Preview dimensions
   const previewMaxWidth = 400;
@@ -726,7 +727,7 @@ export default function TemplatesPage() {
 
   const selectedElement = elements.find((el) => el.id === selectedId);
 
-  const handleExport = async () => {
+  const handleExport = async (format: "png" | "jpg" = exportFormat) => {
     if (!cardRef.current) return;
 
     const prevSelected = selectedId;
@@ -737,8 +738,7 @@ export default function TemplatesPage() {
 
     try {
       const exportScale = selectedSize.width / cardRef.current.offsetWidth;
-
-      const dataUrl = await toPng(cardRef.current, {
+      const exportOptions = {
         width: selectedSize.width,
         height: selectedSize.height,
         style: {
@@ -746,10 +746,14 @@ export default function TemplatesPage() {
           transformOrigin: "top left",
         },
         pixelRatio: 1,
-      });
+      };
+
+      const dataUrl = format === "jpg"
+        ? await toJpeg(cardRef.current, { ...exportOptions, quality: 0.95, backgroundColor: "#000" })
+        : await toPng(cardRef.current, exportOptions);
 
       const link = document.createElement("a");
-      link.download = `social-card-${Date.now()}.png`;
+      link.download = `social-card-${Date.now()}.${format}`;
       link.href = dataUrl;
       link.click();
 
@@ -1036,17 +1040,32 @@ export default function TemplatesPage() {
           <h1 className="text-2xl font-bold">Card Designer</h1>
           <p className="text-gray-400 text-sm">Click to select, drag to move, corners to resize</p>
         </div>
-        <Button
-          onClick={handleExport}
-          isLoading={isExporting}
-          size="lg"
-          className={exportSuccess
-            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25"
-            : "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
-          }
-        >
-          {exportSuccess ? <><Check className="w-5 h-5" /> Downloaded!</> : <><Download className="w-5 h-5" /> Download PNG</>}
-        </Button>
+        <div className="flex items-center gap-2">
+          {exportSuccess ? (
+            <Button size="lg" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25">
+              <Check className="w-5 h-5" /> Downloaded!
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={() => handleExport("png")}
+                isLoading={isExporting && exportFormat === "png"}
+                disabled={isExporting}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
+              >
+                <Download className="w-4 h-4" /> PNG
+              </Button>
+              <Button
+                onClick={() => handleExport("jpg")}
+                isLoading={isExporting && exportFormat === "jpg"}
+                disabled={isExporting}
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-105"
+              >
+                <Download className="w-4 h-4" /> JPG
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[1fr,440px] gap-6">

@@ -21,10 +21,10 @@ import {
   Circle,
   RectangleHorizontal,
   Sparkles,
-  Quote,
   ChevronDown,
   ChevronUp,
-  User,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 import { Button, Card, Input, Textarea } from "@/components/ui";
 import { toPng } from "html-to-image";
@@ -114,6 +114,13 @@ const CARD_SIZES = [
   { id: "twitter", name: "Twitter", width: 1200, height: 675 },
 ];
 
+const IMAGE_FIT_OPTIONS = [
+  { id: "cover", name: "Cover", desc: "Fill area, crop if needed" },
+  { id: "contain", name: "Contain", desc: "Fit inside, show all" },
+  { id: "fill", name: "Fill", desc: "Stretch to fill" },
+  { id: "none", name: "Original", desc: "Original size" },
+];
+
 interface CanvasElement {
   id: string;
   type: "text" | "image";
@@ -128,6 +135,7 @@ interface CanvasElement {
   color?: string;
   borderRadius?: number;
   shadow?: boolean;
+  objectFit?: "cover" | "contain" | "fill" | "none";
 }
 
 interface RecentHook {
@@ -141,30 +149,30 @@ export default function TemplatesPage() {
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const contentImageInputRef = useRef<HTMLInputElement>(null);
 
-  // Canvas elements
+  // Canvas elements - bigger default sizes
   const [elements, setElements] = useState<CanvasElement[]>([
     {
       id: "hook-text",
       type: "text",
-      x: 40,
-      y: 80,
-      width: 300,
-      height: 150,
+      x: 60,
+      y: 150,
+      width: 960,
+      height: 500,
       content: "Your viral hook goes here.\n\nMake it impactful!",
-      fontSize: 24,
-      fontWeight: "600",
+      fontSize: 64,
+      fontWeight: "700",
       textAlign: "center",
       color: "#ffffff",
     },
     {
       id: "author-text",
       type: "text",
-      x: 140,
-      y: 280,
-      width: 120,
-      height: 30,
+      x: 380,
+      y: 750,
+      width: 320,
+      height: 80,
       content: "@yourhandle",
-      fontSize: 14,
+      fontSize: 32,
       fontWeight: "500",
       textAlign: "center",
       color: "#8b5cf6",
@@ -200,10 +208,10 @@ export default function TemplatesPage() {
   const [exportSuccess, setExportSuccess] = useState(false);
 
   // Preview dimensions
-  const previewMaxWidth = 380;
+  const previewMaxWidth = 400;
   const aspectRatio = selectedSize.height / selectedSize.width;
   const previewWidth = previewMaxWidth;
-  const previewHeight = Math.min(previewMaxWidth * aspectRatio, 500);
+  const previewHeight = Math.min(previewMaxWidth * aspectRatio, 520);
 
   // Scale factor for coordinates
   const scale = previewWidth / selectedSize.width;
@@ -252,7 +260,6 @@ export default function TemplatesPage() {
     setBgColor(template.config.background);
     setTextColor(template.config.textColor);
     setAccentColor(template.config.accentColor);
-    // Update text colors
     setElements((prev) =>
       prev.map((el) => {
         if (el.id === "hook-text") return { ...el, color: template.config.textColor };
@@ -279,13 +286,14 @@ export default function TemplatesPage() {
         const newImage: CanvasElement = {
           id: `image-${Date.now()}`,
           type: "image",
-          x: 120,
-          y: 20,
-          width: 150,
-          height: 150,
+          x: 340,
+          y: 100,
+          width: 400,
+          height: 400,
           content: reader.result as string,
-          borderRadius: 12,
+          borderRadius: 8,
           shadow: true,
+          objectFit: "cover",
         };
         setElements((prev) => [...prev, newImage]);
         setSelectedId(newImage.id);
@@ -294,7 +302,7 @@ export default function TemplatesPage() {
     }
   };
 
-  // Mouse handlers for drag and resize
+  // Mouse handlers
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, elementId: string, handle?: string) => {
       e.stopPropagation();
@@ -325,7 +333,7 @@ export default function TemplatesPage() {
   );
 
   const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent) => {
       if (!selectedId || (!isDragging && !isResizing)) return;
 
       const dx = (e.clientX - dragStart.x) / scale;
@@ -344,27 +352,33 @@ export default function TemplatesPage() {
           }
 
           if (isResizing && resizeHandle) {
-            let newX = el.x;
-            let newY = el.y;
-            let newW = el.width;
-            let newH = el.height;
+            let newX = dragStart.elemX;
+            let newY = dragStart.elemY;
+            let newW = dragStart.elemW;
+            let newH = dragStart.elemH;
 
+            // East (right)
             if (resizeHandle.includes("e")) {
-              newW = Math.max(50, dragStart.elemW + dx);
+              newW = Math.max(80, dragStart.elemW + dx);
             }
+            // West (left)
             if (resizeHandle.includes("w")) {
-              const widthChange = dx;
-              newW = Math.max(50, dragStart.elemW - widthChange);
-              newX = dragStart.elemX + (dragStart.elemW - newW);
+              newW = Math.max(80, dragStart.elemW - dx);
+              newX = dragStart.elemX + dragStart.elemW - newW;
             }
+            // South (bottom)
             if (resizeHandle.includes("s")) {
-              newH = Math.max(30, dragStart.elemH + dy);
+              newH = Math.max(40, dragStart.elemH + dy);
             }
+            // North (top)
             if (resizeHandle.includes("n")) {
-              const heightChange = dy;
-              newH = Math.max(30, dragStart.elemH - heightChange);
-              newY = dragStart.elemY + (dragStart.elemH - newH);
+              newH = Math.max(40, dragStart.elemH - dy);
+              newY = dragStart.elemY + dragStart.elemH - newH;
             }
+
+            // Keep within bounds
+            newX = Math.max(0, newX);
+            newY = Math.max(0, newY);
 
             return { ...el, x: newX, y: newY, width: newW, height: newH };
           }
@@ -382,6 +396,18 @@ export default function TemplatesPage() {
     setResizeHandle(null);
   }, []);
 
+  // Global mouse events for smooth dragging
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
+
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       setSelectedId(null);
@@ -393,7 +419,7 @@ export default function TemplatesPage() {
   };
 
   const deleteElement = (id: string) => {
-    if (id === "hook-text" || id === "author-text") return; // Don't delete main text
+    if (id === "hook-text" || id === "author-text") return;
     setElements((prev) => prev.filter((el) => el.id !== id));
     setSelectedId(null);
   };
@@ -439,52 +465,40 @@ export default function TemplatesPage() {
     setSelectedId(prevSelected);
   };
 
-  // Resize handles component
-  const ResizeHandles = ({ element }: { element: CanvasElement }) => {
-    const handles = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+  // Resize handles - small handles
+  const ResizeHandles = ({ elementId }: { elementId: string }) => {
+    const handles = ["nw", "ne", "se", "sw"];
     const cursorMap: Record<string, string> = {
-      nw: "nw-resize",
-      n: "n-resize",
-      ne: "ne-resize",
-      e: "e-resize",
-      se: "se-resize",
-      s: "s-resize",
-      sw: "sw-resize",
-      w: "w-resize",
+      nw: "nwse-resize",
+      ne: "nesw-resize",
+      se: "nwse-resize",
+      sw: "nesw-resize",
     };
 
     return (
       <>
         {handles.map((handle) => {
-          let style: React.CSSProperties = {
+          const style: React.CSSProperties = {
             position: "absolute",
-            width: 10,
-            height: 10,
+            width: 8,
+            height: 8,
             background: "#8b5cf6",
-            border: "2px solid white",
+            border: "1px solid white",
             borderRadius: 2,
             cursor: cursorMap[handle],
             zIndex: 100,
           };
 
-          if (handle.includes("n")) style.top = -5;
-          if (handle.includes("s")) style.bottom = -5;
-          if (handle.includes("w")) style.left = -5;
-          if (handle.includes("e")) style.right = -5;
-          if (handle === "n" || handle === "s") {
-            style.left = "50%";
-            style.transform = "translateX(-50%)";
-          }
-          if (handle === "w" || handle === "e") {
-            style.top = "50%";
-            style.transform = "translateY(-50%)";
-          }
+          if (handle === "nw") { style.top = -4; style.left = -4; }
+          if (handle === "ne") { style.top = -4; style.right = -4; }
+          if (handle === "se") { style.bottom = -4; style.right = -4; }
+          if (handle === "sw") { style.bottom = -4; style.left = -4; }
 
           return (
             <div
               key={handle}
               style={style}
-              onMouseDown={(e) => handleMouseDown(e, element.id, handle)}
+              onMouseDown={(e) => handleMouseDown(e, elementId, handle)}
             />
           );
         })}
@@ -519,7 +533,7 @@ export default function TemplatesPage() {
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr,420px] gap-6">
+      <div className="grid lg:grid-cols-[1fr,440px] gap-6">
         {/* Left Side - Controls */}
         <div className="space-y-4 lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:pr-2">
           {/* Recent Hooks */}
@@ -631,9 +645,9 @@ export default function TemplatesPage() {
                   ) : (
                     <ImageIcon className="w-4 h-4 text-pink-400" />
                   )}
-                  {selectedElement.id === "hook-text" ? "Hook Text" : selectedElement.id === "author-text" ? "Author" : "Content Image"}
+                  {selectedElement.id === "hook-text" ? "Hook Text" : selectedElement.id === "author-text" ? "Author" : selectedElement.type === "image" ? "Image" : "Text"}
                 </h3>
-                {selectedElement.type === "image" && (
+                {selectedElement.id !== "hook-text" && selectedElement.id !== "author-text" && (
                   <Button variant="ghost" size="sm" onClick={() => deleteElement(selectedElement.id)}>
                     <Trash2 className="w-4 h-4 text-red-400" />
                   </Button>
@@ -652,18 +666,18 @@ export default function TemplatesPage() {
                   <div>
                     <label className="block text-xs text-gray-400 mb-2">Font Size: {selectedElement.fontSize}px</label>
                     <div className="flex items-center gap-2">
-                      <Button variant="glass" size="sm" onClick={() => updateElement(selectedElement.id, { fontSize: Math.max(10, (selectedElement.fontSize || 24) - 2) })}>
+                      <Button variant="glass" size="sm" onClick={() => updateElement(selectedElement.id, { fontSize: Math.max(12, (selectedElement.fontSize || 24) - 4) })}>
                         <Minus className="w-4 h-4" />
                       </Button>
                       <input
                         type="range"
-                        min="10"
-                        max="72"
+                        min="12"
+                        max="120"
                         value={selectedElement.fontSize || 24}
                         onChange={(e) => updateElement(selectedElement.id, { fontSize: Number(e.target.value) })}
                         className="flex-1 accent-purple-500"
                       />
-                      <Button variant="glass" size="sm" onClick={() => updateElement(selectedElement.id, { fontSize: Math.min(72, (selectedElement.fontSize || 24) + 2) })}>
+                      <Button variant="glass" size="sm" onClick={() => updateElement(selectedElement.id, { fontSize: Math.min(120, (selectedElement.fontSize || 24) + 4) })}>
                         <Plus className="w-4 h-4" />
                       </Button>
                     </div>
@@ -728,6 +742,25 @@ export default function TemplatesPage() {
 
               {selectedElement.type === "image" && (
                 <div className="space-y-4">
+                  {/* Image Fit Options */}
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-2">Image Position</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {IMAGE_FIT_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => updateElement(selectedElement.id, { objectFit: opt.id as "cover" | "contain" | "fill" | "none" })}
+                          className={`p-2 rounded text-left transition-all ${
+                            selectedElement.objectFit === opt.id ? "bg-purple-500 text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"
+                          }`}
+                        >
+                          <div className="text-xs font-medium">{opt.name}</div>
+                          <div className="text-[10px] opacity-70">{opt.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs text-gray-400 mb-2">Border Radius: {selectedElement.borderRadius || 0}%</label>
                     <div className="flex items-center gap-2">
@@ -786,13 +819,13 @@ export default function TemplatesPage() {
                   const newText: CanvasElement = {
                     id: `text-${Date.now()}`,
                     type: "text",
-                    x: 100,
-                    y: 200,
-                    width: 200,
-                    height: 60,
+                    x: 200,
+                    y: 400,
+                    width: 680,
+                    height: 120,
                     content: "New text",
-                    fontSize: 20,
-                    fontWeight: "500",
+                    fontSize: 48,
+                    fontWeight: "600",
                     textAlign: "center",
                     color: textColor,
                   };
@@ -851,25 +884,25 @@ export default function TemplatesPage() {
                 {
                   id: "hook-text",
                   type: "text",
-                  x: 40,
-                  y: 80,
-                  width: 300,
-                  height: 150,
+                  x: 60,
+                  y: 150,
+                  width: 960,
+                  height: 500,
                   content: "Your viral hook goes here.\n\nMake it impactful!",
-                  fontSize: 24,
-                  fontWeight: "600",
+                  fontSize: 64,
+                  fontWeight: "700",
                   textAlign: "center",
                   color: textColor,
                 },
                 {
                   id: "author-text",
                   type: "text",
-                  x: 140,
-                  y: 280,
-                  width: 120,
-                  height: 30,
+                  x: 380,
+                  y: 750,
+                  width: 320,
+                  height: 80,
                   content: "@yourhandle",
-                  fontSize: 14,
+                  fontSize: 32,
                   fontWeight: "500",
                   textAlign: "center",
                   color: accentColor,
@@ -903,9 +936,6 @@ export default function TemplatesPage() {
                   cursor: isDragging ? "grabbing" : "default",
                 }}
                 onClick={handleCanvasClick}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
               >
                 {/* Background Image */}
                 {bgImage && (
@@ -947,7 +977,7 @@ export default function TemplatesPage() {
                             fontSize: (element.fontSize || 24) * scale,
                             fontWeight: element.fontWeight || "600",
                             textAlign: element.textAlign || "center",
-                            lineHeight: 1.3,
+                            lineHeight: 1.2,
                             whiteSpace: "pre-wrap",
                             wordBreak: "break-word",
                             userSelect: "none",
@@ -959,8 +989,9 @@ export default function TemplatesPage() {
                         <img
                           src={element.content}
                           alt=""
-                          className="w-full h-full object-cover"
+                          className="w-full h-full"
                           style={{
+                            objectFit: element.objectFit || "cover",
                             borderRadius: `${element.borderRadius || 0}%`,
                             boxShadow: element.shadow ? "0 10px 30px rgba(0,0,0,0.4)" : "none",
                             userSelect: "none",
@@ -970,8 +1001,8 @@ export default function TemplatesPage() {
                         />
                       )}
 
-                      {/* Resize Handles */}
-                      {isSelected && <ResizeHandles element={element} />}
+                      {/* Resize Handles - only corners, small */}
+                      {isSelected && <ResizeHandles elementId={element.id} />}
                     </div>
                   );
                 })}

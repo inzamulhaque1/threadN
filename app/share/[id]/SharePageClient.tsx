@@ -72,8 +72,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
 
   const shareToFacebook = () => {
     const url = encodeURIComponent(getShareUrl());
-    const quote = encodeURIComponent(getShareText());
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${quote}`, "_blank");
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&display=popup`, "_blank", "width=600,height=400");
   };
 
   const shareToLinkedIn = () => {

@@ -922,8 +922,8 @@ export default function TemplatesPage() {
   const shareToFacebook = () => {
     if (!shareUrl) return;
     const url = encodeURIComponent(shareUrl);
-    const quote = encodeURIComponent(getShareText());
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${quote}`, "_blank");
+    // Facebook sharer - note: preview only works with public URLs
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&display=popup`, "_blank", "width=600,height=400");
   };
 
   const shareToLinkedIn = () => {
@@ -1981,11 +1981,11 @@ export default function TemplatesPage() {
                   <span className="text-xs text-gray-500 group-hover:text-gray-300">Facebook</span>
                 </button>
 
-                {/* Instagram */}
+                {/* Instagram - No web API, just copy image */}
                 <button
-                  onClick={() => {
-                    handleCopyToClipboard();
-                    window.open("https://www.instagram.com/", "_blank");
+                  onClick={async () => {
+                    await handleCopyToClipboard();
+                    alert("Image copied to clipboard!\n\nInstagram doesn't support direct sharing from web.\n\nOpen Instagram app on your phone and paste the image there.");
                   }}
                   className="flex flex-col items-center justify-center gap-1 p-3 bg-white/5 hover:bg-gradient-to-br hover:from-[#833AB4]/20 hover:via-[#FD1D1D]/20 hover:to-[#F77737]/20 border border-white/10 hover:border-pink-500/30 rounded-xl transition group"
                 >
@@ -2071,9 +2071,16 @@ export default function TemplatesPage() {
           )}
 
           {/* Info */}
-          <p className="text-xs text-gray-500 text-center pt-2 border-t border-white/5">
-            {shareUrl ? "Anyone with the link can view and download your card" : "Generate a link to share your card on social media"}
-          </p>
+          <div className="text-xs text-gray-500 pt-3 border-t border-white/5 space-y-1">
+            <p className="text-center">
+              {shareUrl ? "Anyone with the link can view and download your card" : "Generate a link to share your card on social media"}
+            </p>
+            {shareUrl && (
+              <p className="text-center text-gray-600">
+                Note: Facebook & LinkedIn previews only work with deployed URLs
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

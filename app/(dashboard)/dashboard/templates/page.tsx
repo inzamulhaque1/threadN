@@ -445,42 +445,46 @@ interface RecentThread {
   createdAt: string;
 }
 
+// Initial elements for the canvas
+const INITIAL_ELEMENTS: CanvasElement[] = [
+  {
+    id: "hook-text",
+    type: "text",
+    x: 60,
+    y: 200,
+    width: 960,
+    height: 450,
+    content: "Your viral hook goes here.\n\nMake it impactful!",
+    fontSize: 58,
+    fontWeight: "700",
+    textAlign: "center",
+    color: "#ffffff",
+  },
+  {
+    id: "author-text",
+    type: "text",
+    x: 380,
+    y: 720,
+    width: 320,
+    height: 60,
+    content: "@yourhandle",
+    fontSize: 28,
+    fontWeight: "500",
+    textAlign: "center",
+    color: "#8b5cf6",
+  },
+];
+
 export default function TemplatesPage() {
   const { data: session } = useSession();
   const cardRef = useRef<HTMLDivElement>(null);
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const contentImageInputRef = useRef<HTMLInputElement>(null);
+  const elementsRef = useRef<CanvasElement[]>(INITIAL_ELEMENTS);
   const [authorInitialized, setAuthorInitialized] = useState(false);
 
   // Canvas elements
-  const [elements, setElements] = useState<CanvasElement[]>([
-    {
-      id: "hook-text",
-      type: "text",
-      x: 60,
-      y: 200,
-      width: 960,
-      height: 450,
-      content: "Your viral hook goes here.\n\nMake it impactful!",
-      fontSize: 58,
-      fontWeight: "700",
-      textAlign: "center",
-      color: "#ffffff",
-    },
-    {
-      id: "author-text",
-      type: "text",
-      x: 380,
-      y: 720,
-      width: 320,
-      height: 60,
-      content: "@yourhandle",
-      fontSize: 28,
-      fontWeight: "500",
-      textAlign: "center",
-      color: "#8b5cf6",
-    },
-  ]);
+  const [elements, setElements] = useState<CanvasElement[]>(INITIAL_ELEMENTS);
 
   // Set author name from session
   useEffect(() => {
@@ -495,6 +499,11 @@ export default function TemplatesPage() {
       setAuthorInitialized(true);
     }
   }, [session, authorInitialized]);
+
+  // Keep elementsRef in sync with elements state
+  useEffect(() => {
+    elementsRef.current = elements;
+  }, [elements]);
 
   // Decorations from template
   const [decorations, setDecorations] = useState<Decoration[]>(CARD_TEMPLATES[0].decorations || []);
@@ -844,10 +853,10 @@ export default function TemplatesPage() {
     setSelectedId(prevSelected);
   };
 
-  // Get content hash for detecting changes
+  // Get content hash for detecting changes (use ref for latest state)
   const getContentHash = () => {
-    const hookElement = elements.find((el) => el.id === "hook-text");
-    const authorElement = elements.find((el) => el.id === "author-text");
+    const hookElement = elementsRef.current.find((el) => el.id === "hook-text");
+    const authorElement = elementsRef.current.find((el) => el.id === "author-text");
     return JSON.stringify({
       hook: hookElement?.content,
       author: authorElement?.content,
@@ -886,10 +895,15 @@ export default function TemplatesPage() {
         pixelRatio: 1,
       });
 
-      const hookElement = elements.find((el) => el.id === "hook-text");
-      const title = hookElement?.content?.split("\n")[0] || "My Content Card";
-      const description = selectedThread?.body?.slice(0, 200) || ""; // Short for OG meta
-      const threadBody = selectedThread?.body || ""; // Full content
+      // Use ref to get latest elements state (avoids stale closure)
+      const hookElement = elementsRef.current.find((el) => el.id === "hook-text");
+      const hookContent = hookElement?.content || "";
+      const title = hookContent.split("\n")[0] || "My Content Card";
+
+      // Use selectedThread if available, otherwise use hook content
+      const fullContent = selectedThread?.body || hookContent;
+      const description = fullContent.slice(0, 200); // Short for OG meta
+      const threadBody = fullContent; // Full content
 
       const res = await fetch("/api/share", {
         method: "POST",
@@ -943,10 +957,13 @@ export default function TemplatesPage() {
         pixelRatio: 1,
       });
 
-      const hookElement = elements.find((el) => el.id === "hook-text");
-      const title = hookElement?.content?.split("\n")[0] || "My Content Card";
-      const description = selectedThread?.body?.slice(0, 200) || "";
-      const threadBody = selectedThread?.body || "";
+      // Use ref to get latest elements state (avoids stale closure)
+      const hookElement = elementsRef.current.find((el) => el.id === "hook-text");
+      const hookContent = hookElement?.content || "";
+      const title = hookContent.split("\n")[0] || "My Content Card";
+      const fullContent = selectedThread?.body || hookContent;
+      const description = fullContent.slice(0, 200);
+      const threadBody = fullContent;
 
       const res = await fetch(`/api/share/${shareId}`, {
         method: "PUT",
@@ -986,9 +1003,9 @@ export default function TemplatesPage() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  // Get share text
+  // Get share text (use ref for latest state)
   const getShareText = () => {
-    const hookElement = elements.find((el) => el.id === "hook-text");
+    const hookElement = elementsRef.current.find((el) => el.id === "hook-text");
     return hookElement?.content?.split("\n")[0] || "Check out my content!";
   };
 
@@ -1933,7 +1950,7 @@ export default function TemplatesPage() {
                   {/* Body */}
                   <div>
                     <span className="text-xs text-gray-400 block mb-1">Thread Content:</span>
-                    <div className="text-sm text-gray-300 bg-white/5 rounded-lg p-3 max-h-[200px] overflow-y-auto whitespace-pre-wrap thin-scrollbar">
+                    <div className="text-sm text-gray-300 bg-white/5 rounded-lg p-3 whitespace-pre-wrap">
                       {selectedThread.body}
                     </div>
                   </div>

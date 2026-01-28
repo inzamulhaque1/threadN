@@ -162,7 +162,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
           {/* Card Preview */}
           <div className="flex flex-col items-center">
             <div className="relative w-full max-w-md">
@@ -181,16 +181,16 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           </div>
 
           {/* Card Info & Actions */}
-          <div className="flex flex-col">
+          <div className="flex flex-col overflow-visible">
             <h1 className="text-2xl font-bold text-white mb-2">{card.title}</h1>
 
             {/* Full Thread Content */}
             {card.threadBody && (
-              <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10 overflow-visible">
                 <p className="text-sm text-gray-400 mb-2">Thread Content:</p>
-                <p className="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
+                <div className="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
                   {card.threadBody}
-                </p>
+                </div>
               </div>
             )}
 

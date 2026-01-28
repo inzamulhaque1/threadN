@@ -361,17 +361,17 @@ export default function GeneratePage() {
   };
 
   return (
-    <div className="h-full">
+    <div className="h-full font-body">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Generate Content</h1>
-          <p className="text-gray-400 text-sm">Transform ideas into viral threads</p>
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white">Generate Content</h1>
+          <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">Transform ideas into viral threads</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm">
-            <span className="text-gray-400">Daily: </span>
-            <span className={dailyRemaining > 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+          <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+            <span className="text-gray-400 text-sm font-accent">Daily: </span>
+            <span className={`font-mono font-bold text-base ${dailyRemaining > 0 ? "text-green-400" : "text-red-400"}`}>
               {user?.usage?.dailyThreads || 0}/{limits.dailyThreads}
             </span>
           </div>

@@ -98,8 +98,8 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Users className="w-8 h-8 text-purple-400" />
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white flex items-center gap-3">
+            <Users className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
             Users
           </h1>
           <p className="text-gray-400 mt-1">Manage user accounts</p>

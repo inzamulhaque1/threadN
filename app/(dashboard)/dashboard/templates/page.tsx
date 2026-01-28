@@ -1337,11 +1337,11 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="h-full">
-      <div className="flex items-center justify-between mb-6">
+    <div className="h-full font-body">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Card Designer</h1>
-          <p className="text-gray-400 text-sm">Click to select, drag to move, corners to resize</p>
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white">Card Designer</h1>
+          <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">Click to select, drag to move, corners to resize</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Download Buttons */}

@@ -231,11 +231,11 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="h-full flex gap-6">
+    <div className="h-full flex flex-col lg:flex-row gap-6 font-body">
       {/* Sidebar - Collections */}
-      <div className="w-64 shrink-0">
+      <div className="w-full lg:w-64 shrink-0">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold">Collections</h2>
+          <h2 className="font-heading font-semibold text-lg text-white">Collections</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -313,8 +313,8 @@ export default function FavoritesPage() {
       <div className="flex-1">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Favorites</h1>
-            <p className="text-gray-400 text-sm">
+            <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white">Favorites</h1>
+            <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">
               {selectedCollection === null
                 ? "All your saved content"
                 : selectedCollection === "uncategorized"

@@ -42,14 +42,14 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-4xl mx-auto font-body">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <History className="w-8 h-8 text-purple-400" />
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white flex items-center gap-3">
+            <History className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
             History
           </h1>
-          <p className="text-gray-400 mt-1">View your past generations</p>
+          <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">View your past generations</p>
         </div>
 
         {/* Filter */}
@@ -178,8 +178,8 @@ export default function HistoryPage() {
                 <ChevronLeft className="w-4 h-4" />
                 Previous
               </Button>
-              <span className="text-gray-400">
-                Page {page} of {totalPages}
+              <span className="text-gray-400 font-accent">
+                Page <span className="font-mono">{page}</span> of <span className="font-mono">{totalPages}</span>
               </span>
               <Button
                 variant="glass"

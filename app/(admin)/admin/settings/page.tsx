@@ -413,11 +413,11 @@ export default function AdminSettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Settings className="w-8 h-8 text-purple-400" />
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white flex items-center gap-3">
+            <Settings className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
             Settings
           </h1>
-          <p className="text-gray-400 mt-1">Configure application settings</p>
+          <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">Configure application settings</p>
         </div>
         <div className="flex items-center gap-3">
           {saveMessage && (

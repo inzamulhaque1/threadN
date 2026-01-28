@@ -112,8 +112,8 @@ export default function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Admin Overview</h1>
-        <p className="text-gray-400 mt-1">Monitor your platform</p>
+        <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white">Admin Overview</h1>
+        <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">Monitor your platform</p>
       </div>
 
       {/* Stats Grid */}

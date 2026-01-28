@@ -1,0 +1,1262 @@
+================================================================================
+                           THREADN - FULL PROJECT DOCUMENTATION
+                     AI-Powered Viral Content Generation Platform
+================================================================================
+
+Website: https://threadn.launchory.org
+Version: 1.0.0
+Last Updated: January 29, 2026
+
+================================================================================
+                              TABLE OF CONTENTS
+================================================================================
+
+1.  PROJECT OVERVIEW
+2.  TECH STACK & ARCHITECTURE
+3.  CORE FEATURES
+4.  CONTENT GENERATION SYSTEM
+5.  PLATFORM FORMATTING
+6.  DATABASE MODELS
+7.  API ENDPOINTS
+8.  AUTHENTICATION SYSTEM
+9.  PRICING & SUBSCRIPTION PLANS
+10. GAMIFICATION SYSTEM
+11. ADMIN PANEL
+12. FILE STRUCTURE
+13. ENVIRONMENT SETUP
+14. PROMOTIONAL CONTENT
+15. SOCIAL MEDIA COPY
+16. LAUNCH CHECKLIST
+
+================================================================================
+                           1. PROJECT OVERVIEW
+================================================================================
+
+WHAT IS THREADN?
+----------------
+ThreadN is an AI-powered SaaS platform that transforms any content - ideas,
+YouTube videos, transcripts, or topics - into viral social media content. It
+generates 10 scored viral hooks with evidence-based reasoning, then builds
+complete threads ready for multi-platform posting.
+
+TARGET AUDIENCE:
+- Content Creators
+- Social Media Managers
+- Digital Marketers
+- YouTubers & Podcasters
+- Entrepreneurs & Coaches
+- Freelance Writers
+- Marketing Agencies
+
+CORE VALUE PROPOSITION:
+"Stop struggling to write. Start creating viral content."
+
+KEY BENEFITS:
+- Transform 1 piece of content into 10 viral hooks in seconds
+- Auto-extract transcripts from any YouTube video
+- Virality scores (0-5) with evidence from your content
+- One-click thread generation with custom CTAs
+- Format for any platform (Facebook, Twitter, LinkedIn, Instagram)
+- Schedule, organize, and track your content
+
+================================================================================
+                        2. TECH STACK & ARCHITECTURE
+================================================================================
+
+FRONTEND:
+---------
+- Framework: Next.js 15.1.0 (App Router)
+- React: Version 19
+- Styling: Tailwind CSS 3.4.17
+- Icons: Lucide React
+- State Management: Zustand 5.0.0
+- Form Validation: Zod 3.24.0
+- Charts: Recharts 2.15.0
+- Image Generation: html-to-image 1.11.13
+
+BACKEND:
+--------
+- Runtime: Node.js with Next.js API Routes
+- Database: MongoDB with Mongoose 8.9.0
+- Authentication: NextAuth.js 5.0.0-beta.30
+- AI: OpenAI API (GPT-4o-mini model)
+- YouTube: youtubei.js 16.0.1
+- Password: bcryptjs 2.4.3
+- Trends: google-trends-api 4.9.2
+
+HOSTING & INFRASTRUCTURE:
+-------------------------
+- Deployment: Vercel (recommended)
+- Database: MongoDB Atlas
+- Domain: threadn.launchory.org
+
+================================================================================
+                           3. CORE FEATURES
+================================================================================
+
+3.1 CONTENT INPUT MODES
+-----------------------
+
+MODE 1: PASTE TEXT
+- Paste any transcript, notes, blog post, or content
+- Supports up to 10,000 characters
+- Best for: Existing written content, podcast notes, transcripts
+
+MODE 2: YOUTUBE LINK
+- Drop any YouTube URL
+- Auto-extracts transcript using 5 fallback methods
+- Works even when captions are disabled
+- Best for: Repurposing video content, video summaries
+
+MODE 3: AI FROM TOPIC
+- Just describe your topic
+- Choose style: Informative, Motivational, Storytelling, Controversial,
+  Humorous, Educational, Inspirational
+- Choose tone: Professional, Casual, Friendly, Authoritative,
+  Conversational, Bold & Direct
+- Choose audience: General, Entrepreneurs, Professionals, Students,
+  Creators, Marketers, Developers, Beginners
+- Best for: Starting from scratch, idea exploration
+
+3.2 GENERATION FEATURES
+-----------------------
+
+AI HOOK GENERATOR:
+- Generates 10 viral hooks per input
+- Each hook scored 0-5 for virality potential
+- Evidence quoted from your content
+- Reasoning explaining why it works
+- Max 15 words per hook (scroll-stopping length)
+
+THREAD BUILDER:
+- Pick your favorite hook
+- Add custom call-to-action (CTA)
+- Generates 5-7 numbered points
+- Includes engaging emojis
+- Ready to post immediately
+
+A/B HOOK TESTING (Pro+ Plans):
+- Test 5 emotional angles: Curiosity, Fear, Excitement, Controversy, Empathy
+- Test 5 formats: Question, Statement, Statistic, Story, Challenge
+- Generate variations to find what resonates
+
+3.3 WORKFLOW FEATURES
+---------------------
+
+SMART SCHEDULING:
+- Schedule posts for future dates/times
+- Set daily or weekly recurrence
+- Track publish status
+- Manual publish option
+
+REUSABLE TEMPLATES:
+- Save winning formats as templates
+- Use variables like {{topic}} and {{audience}}
+- Share publicly or keep private
+- Track usage counts
+
+COLLECTIONS & FAVORITES:
+- Save favorite hooks and threads
+- Organize into color-coded collections
+- Add custom notes and tags
+- Quick filtering and search
+
+SHARE CARDS:
+- Generate beautiful share cards
+- Get unique public link
+- Rich OG previews for social sharing
+- Track view counts
+
+GENERATION HISTORY:
+- Full history of all generations
+- Filter by type (hooks/threads)
+- Pagination support
+- Never lose a great hook
+
+3.4 ADDITIONAL FEATURES
+-----------------------
+
+GOOGLE TRENDS INTEGRATION:
+- See what's trending right now
+- Create timely content
+- Ride trending topics
+
+COIN SYSTEM:
+- Earn coins through achievements
+- Redeem access codes for coins
+- Use coins for extra generations
+- Non-expiring, non-refundable
+
+================================================================================
+                       4. CONTENT GENERATION SYSTEM
+================================================================================
+
+4.1 HOOK GENERATION PROCESS
+---------------------------
+
+INPUT:
+- User provides transcript/content (any length)
+- System sanitizes and wraps input
+
+PROCESSING:
+- GPT-4o-mini analyzes content
+- Identifies key insights and patterns
+- Applies viral hook frameworks:
+  * Curiosity gaps
+  * Controversy/hot takes
+  * Relatability moments
+  * Pattern interrupts
+  * Emotional triggers
+
+OUTPUT FORMAT:
+{
+  "hooks": [
+    {
+      "hook": "The text of the viral hook (max 15 words)",
+      "score": 4.5,
+      "reason": "Why this hook works and drives engagement",
+      "evidence": "Direct quote from transcript supporting this hook"
+    },
+    // ... 9 more hooks
+  ]
+}
+
+SCORING CRITERIA (0-5):
+- 5: Extremely viral potential, broad appeal, strong emotion
+- 4: High engagement, proven pattern, clear value
+- 3: Good hook, solid engagement expected
+- 2: Average, may work with right audience
+- 1: Weak, needs improvement
+- 0: Not recommended
+
+4.2 THREAD GENERATION PROCESS
+-----------------------------
+
+INPUT:
+- Selected hook (from generation)
+- Original transcript
+- Custom CTA (optional)
+
+PROCESSING:
+- Expands hook into full narrative
+- Creates logical flow
+- Adds supporting points from content
+- Integrates engaging elements
+
+OUTPUT FORMAT:
+{
+  "title": "Thread title based on hook",
+  "body": "
+    [Hook text]
+
+    1. First point with emoji
+    2. Second point with supporting detail
+    3. Third point with insight
+    4. Fourth point with example
+    5. Fifth point with takeaway
+    6. Sixth point (if applicable)
+    7. Seventh point (if applicable)
+
+    [Custom CTA or default]
+  "
+}
+
+4.3 YOUTUBE TRANSCRIPT EXTRACTION
+---------------------------------
+
+5 FALLBACK METHODS (in order):
+
+1. youtubei.js Library
+   - Uses Innertube API
+   - Gets captions directly from YouTube
+   - Highest quality transcripts
+
+2. Direct Caption Track Fetch
+   - Fetches caption tracks from YouTube
+   - Parses XML/JSON responses
+   - Works for most public videos
+
+3. Timedtext API
+   - Legacy YouTube caption API
+   - Fallback for older videos
+   - Supports multiple languages
+
+4. Video Description
+   - Extracts description text
+   - Useful when captions disabled
+   - Last resort for content
+
+5. oEmbed API
+   - Gets video title at minimum
+   - Ensures something is always returned
+   - Fallback of last resort
+
+================================================================================
+                        5. PLATFORM FORMATTING
+================================================================================
+
+5.1 FACEBOOK
+------------
+Character Limit: 63,206 characters
+Format Style:
+- Full threads with emojis
+- Engaging hook at start
+- Numbered points
+- Clear paragraphs
+- Strong CTA
+
+5.2 TWITTER/X
+-------------
+Character Limit: 280 characters per tweet
+Format Style:
+- Auto-split into numbered thread
+- Tweet 1/N format
+- Each tweet self-contained
+- Hooks first tweet
+- CTA last tweet
+
+5.3 LINKEDIN
+------------
+Character Limit: 3,000 characters
+Format Style:
+- Professional tone
+- Industry-relevant language
+- 3-5 hashtags at end
+- Single-line hooks
+- Proper spacing
+
+5.4 INSTAGRAM
+-------------
+Character Limit: 2,200 characters
+Format Style:
+- Caption-ready format
+- Emoji-rich content
+- 20-30 relevant hashtags
+- Call-to-action for engagement
+- Bio link reference
+
+================================================================================
+                          6. DATABASE MODELS
+================================================================================
+
+6.1 USER MODEL
+--------------
+Fields:
+- email (unique, lowercase)
+- password (hashed, hidden from queries)
+- name, image
+- authProvider ("credentials" | "google")
+- googleId (for OAuth users)
+- role ("user" | "admin")
+- plan ("free" | "starter" | "pro" | "enterprise")
+- coins (for extra generations)
+- subscription {
+    status: "active" | "cancelled" | "expired"
+    plan: string
+    expiresAt: Date
+    paddleSubscriptionId: string
+    paddleCustomerId: string
+  }
+- usage {
+    totalHooks: number
+    totalThreads: number
+    dailyThreads: number
+    lastThreadDate: Date
+    dailyCost: number
+    monthlyCost: number
+    lastCostReset: Date
+  }
+
+6.2 GENERATION MODEL
+--------------------
+Fields:
+- userId (reference to User)
+- type ("hooks" | "thread")
+- input {
+    transcript: string
+    cta: string (for threads)
+    selectedHook: string (for threads)
+  }
+- output {
+    hooks: Array (for hook generations)
+    thread: { title, body } (for threads)
+  }
+- tokens (usage count)
+- cost (in USD)
+- timestamps
+
+6.3 ACCESS CODE MODEL
+---------------------
+Fields:
+- code (unique, uppercase)
+- type ("subscription" | "coins" | "trial")
+- value (days for subscription, count for coins)
+- plan (for subscription codes)
+- maxUses, usedCount
+- usedBy (array of userIds)
+- isActive
+- expiresAt
+- createdBy (admin userId)
+
+6.4 SCHEDULED POST MODEL
+------------------------
+Fields:
+- userId
+- content {
+    hook: string
+    thread: string
+    platforms: string[]
+  }
+- scheduledAt (Date)
+- status ("pending" | "published" | "failed")
+- recurrence ("none" | "daily" | "weekly")
+- publishedAt, error
+- timestamps
+
+6.5 TEMPLATE MODEL
+------------------
+Fields:
+- userId (null for system templates)
+- name, description
+- category ("hook" | "thread" | "full")
+- content {
+    hookTemplate: string
+    threadTemplate: string
+    variables: string[]
+  }
+- isPublic
+- usageCount
+- timestamps
+
+6.6 COLLECTION MODEL
+--------------------
+Fields:
+- userId
+- name
+- description
+- color (hex code)
+- icon (emoji or icon name)
+- timestamps
+
+6.7 FAVORITE MODEL
+------------------
+Fields:
+- userId
+- generationId (reference to Generation)
+- collectionId (reference to Collection, optional)
+- notes (user annotations)
+- tags (array of strings)
+- timestamps
+
+6.8 USER STREAK MODEL
+---------------------
+Fields:
+- userId (unique)
+- currentStreak
+- longestStreak
+- lastActivityDate
+- totalDaysActive
+- timestamps
+
+6.9 USER ACHIEVEMENT MODEL
+--------------------------
+Fields:
+- userId
+- achievementId (from achievements list)
+- unlockedAt (Date)
+- progress (for progressive achievements)
+- timestamps
+
+6.10 SHARED CARD MODEL
+----------------------
+Fields:
+- uniqueId (nanoid generated)
+- userId (optional, null for anonymous)
+- imageData (base64)
+- title, description (for OG tags)
+- threadBody (full content)
+- templateName
+- views (counter)
+- timestamps
+
+================================================================================
+                           7. API ENDPOINTS
+================================================================================
+
+7.1 AUTHENTICATION
+------------------
+POST   /api/auth/register         Create account (email/password)
+POST   /api/auth/[...nextauth]    NextAuth handler (login, OAuth)
+GET    /api/auth/me               Get current user profile
+
+7.2 GENERATION
+--------------
+POST   /api/generate              Main generation endpoint
+       Body: {
+         mode: "hooks" | "thread" | "content" | "url",
+         transcript?: string,
+         hook?: string,
+         cta?: string,
+         topic?: string,
+         style?: string,
+         tone?: string,
+         audience?: string,
+         url?: string
+       }
+
+POST   /api/generate/variations   A/B hook testing
+       Body: {
+         transcript: string,
+         originalHook: string,
+         count: number (1-5)
+       }
+
+7.3 USER DATA
+-------------
+GET    /api/users/history         Get generation history
+       Query: page, limit, type (optional filter)
+
+7.4 FAVORITES
+-------------
+GET    /api/favorites             List favorites
+POST   /api/favorites             Add to favorites
+PATCH  /api/favorites/[id]        Update favorite
+DELETE /api/favorites/[id]        Remove favorite
+
+7.5 COLLECTIONS
+---------------
+GET    /api/collections           List collections
+POST   /api/collections           Create collection
+PATCH  /api/collections/[id]      Update collection
+DELETE /api/collections/[id]      Delete collection
+
+7.6 TEMPLATES
+-------------
+GET    /api/templates             List templates
+       Query: filter (my|public|all), category
+POST   /api/templates             Create template
+PATCH  /api/templates/[id]        Update template
+DELETE /api/templates/[id]        Delete template
+POST   /api/templates/[id]/use    Generate from template
+       Body: { variables: { key: value } }
+
+7.7 SCHEDULING
+--------------
+GET    /api/scheduler             List scheduled posts
+       Query: status, page, limit
+POST   /api/scheduler             Create scheduled post
+PATCH  /api/scheduler/[id]        Update scheduled post
+DELETE /api/scheduler/[id]        Delete scheduled post
+POST   /api/scheduler/[id]/publish  Manually publish
+
+7.8 CODES
+---------
+POST   /api/codes/redeem          Redeem access code
+       Body: { code: string }
+
+7.9 GAMIFICATION
+----------------
+GET    /api/achievements          List achievements with status
+GET    /api/streak                Get user streak data
+
+7.10 ADMIN
+----------
+GET    /api/admin/stats           System analytics
+GET    /api/admin/users           List users
+GET    /api/admin/users/[id]      Get user details
+PATCH  /api/admin/users/[id]      Update user
+DELETE /api/admin/users/[id]      Delete user
+GET    /api/admin/codes           List access codes
+POST   /api/admin/codes           Create access code
+PATCH  /api/admin/codes/[id]      Update code
+DELETE /api/admin/codes/[id]      Delete code
+GET    /api/admin/generations     List all generations
+GET    /api/admin/settings        Get system settings
+PATCH  /api/admin/settings        Update settings
+
+================================================================================
+                        8. AUTHENTICATION SYSTEM
+================================================================================
+
+8.1 PROVIDERS
+-------------
+
+GOOGLE OAUTH:
+- One-click sign in with Google
+- Auto-creates user account
+- Syncs name and profile image
+- Links existing accounts by email
+
+CREDENTIALS (EMAIL/PASSWORD):
+- Traditional registration
+- Password hashed with bcryptjs (12 rounds)
+- Secure session management
+
+8.2 SESSION STRATEGY
+--------------------
+- JWT-based sessions
+- 7-day maximum session age
+- Automatic refresh
+- Secure httpOnly cookies
+
+8.3 PROTECTED ROUTES
+--------------------
+Protected by middleware:
+- /dashboard/* (all dashboard pages)
+- /admin/* (admin only)
+
+Auth-only routes (redirect if logged in):
+- /login
+- /register
+
+8.4 ROLE-BASED ACCESS
+---------------------
+Roles: "user" | "admin"
+
+Admin capabilities:
+- Access /admin/* routes
+- Manage users
+- Create access codes
+- View all generations
+- Modify system settings
+
+================================================================================
+                     9. PRICING & SUBSCRIPTION PLANS
+================================================================================
+
+9.1 FREE PLAN ($0/month)
+------------------------
+- 1 thread generation per day
+- 5 hooks per generation (capped)
+- 7-day history retention
+- Basic features only
+- $0.10/day cost limit
+- $1.00/month cost limit
+- No credit card required
+
+9.2 STARTER PLAN ($9/month)
+---------------------------
+- 10 threads per day
+- 10 hooks per generation
+- 30-day history retention
+- All input modes (Text, YouTube, AI)
+- Templates library access
+- Favorites & Collections
+- Multi-platform formatting
+- Priority email support
+- $0.50/day cost limit
+- $10/month cost limit
+
+9.3 PRO PLAN ($19/month) - MOST POPULAR
+---------------------------------------
+- 25 threads per day
+- 10 hooks per generation
+- 90-day history retention
+- A/B hook testing
+- Smart scheduling
+- Share cards with view tracking
+- Google Trends integration
+- Streaks & achievements
+- Access to all templates
+- $2.00/day cost limit
+- $50/month cost limit
+
+9.4 ENTERPRISE PLAN ($49/month)
+-------------------------------
+- 100 threads per day
+- 365-day history retention
+- Everything in Pro
+- API access (coming soon)
+- Team collaboration (coming soon)
+- Dedicated support
+- Custom integrations
+- $10/day cost limit
+- $200/month cost limit
+
+9.5 COIN SYSTEM
+---------------
+- Coins can be used for extra generations
+- 1 coin = 1 additional thread
+- Earn coins through:
+  * Achievement unlocks
+  * Access code redemption
+- Coins never expire
+- Non-transferable, non-refundable
+
+================================================================================
+                        10. GAMIFICATION SYSTEM
+================================================================================
+
+10.1 ACHIEVEMENTS LIST
+----------------------
+
+GENERATION ACHIEVEMENTS:
+- first_hook: Generate your first hook (10 XP)
+- first_thread: Generate your first thread (20 XP)
+- hooks_10: Generate 10 hooks total (50 XP)
+- threads_10: Generate 10 threads total (100 XP)
+- hooks_100: Generate 100 hooks total (500 XP)
+
+STREAK ACHIEVEMENTS:
+- streak_3: Maintain a 3-day streak (30 XP)
+- streak_7: Maintain a 7-day streak (100 XP)
+- streak_30: Maintain a 30-day streak (500 XP)
+
+FEATURE ACHIEVEMENTS:
+- first_schedule: Schedule your first post (25 XP)
+- first_template: Create your first template (25 XP)
+- first_collection: Create your first collection (15 XP)
+- ab_tester: Use A/B hook variations (30 XP)
+- multi_platform: Format for 3+ platforms (50 XP)
+
+10.2 STREAK SYSTEM
+------------------
+Tracking:
+- currentStreak: Active consecutive days
+- longestStreak: Best streak ever achieved
+- totalDaysActive: Lifetime active days
+
+Rules:
+- Streak increments on daily activity
+- Resets to 1 if a day is missed
+- Timezone-aware daily reset
+
+Milestones:
+- 3-day streak: Achievement unlock
+- 7-day streak: Achievement unlock
+- 30-day streak: Achievement unlock + bonus XP
+
+10.3 XP PROGRESSION
+-------------------
+- Each achievement awards XP
+- Total XP displayed on dashboard
+- Future: Creator rank system
+- Future: Leaderboard feature
+
+================================================================================
+                           11. ADMIN PANEL
+================================================================================
+
+11.1 DASHBOARD (/admin)
+-----------------------
+- Total users count
+- Active subscriptions
+- Total generations
+- Revenue metrics
+- Quick stats overview
+
+11.2 USER MANAGEMENT (/admin/users)
+-----------------------------------
+- View all users with pagination
+- Search by email/name
+- Filter by plan/role
+- Edit user details
+- Change user plans
+- Add/remove coins
+- Delete users
+
+11.3 ACCESS CODES (/admin/codes)
+--------------------------------
+Create codes for:
+- Subscription grants (days + plan)
+- Coin bonuses (specific amount)
+- Trial extensions
+
+Code settings:
+- Single-use or multi-use
+- Expiration date
+- Usage tracking
+- Enable/disable
+
+11.4 GENERATIONS (/admin/generations)
+-------------------------------------
+- View all generations
+- Filter by type/user
+- View input/output
+- Cost tracking
+- Token usage stats
+
+11.5 SETTINGS (/admin/settings)
+-------------------------------
+Configure:
+- Feature limits per plan
+- AI model settings
+- Rate limiting
+- Maintenance mode
+
+11.6 ANALYTICS (/admin/analytics)
+---------------------------------
+- User growth charts
+- Generation trends
+- Revenue tracking
+- Plan distribution
+- Cost analysis
+
+================================================================================
+                          12. FILE STRUCTURE
+================================================================================
+
+threadsmith-saas/
+|
++-- app/                           # Next.js App Router
+|   +-- (auth)/                    # Auth group
+|   |   +-- login/page.tsx
+|   |   +-- register/page.tsx
+|   |
+|   +-- (dashboard)/               # Dashboard group
+|   |   +-- dashboard/page.tsx     # Overview
+|   |   +-- generate/page.tsx      # Content generation
+|   |   +-- history/page.tsx       # Generation history
+|   |   +-- scheduler/page.tsx     # Post scheduling
+|   |   +-- templates/page.tsx     # Template management
+|   |   +-- favorites/page.tsx     # Saved favorites
+|   |   +-- collections/page.tsx   # Collections
+|   |   +-- achievements/page.tsx  # Achievements & streaks
+|   |   +-- settings/page.tsx      # User settings
+|   |
+|   +-- (admin)/                   # Admin group
+|   |   +-- admin/page.tsx         # Admin dashboard
+|   |   +-- analytics/page.tsx
+|   |   +-- codes/page.tsx
+|   |   +-- generations/page.tsx
+|   |   +-- settings/page.tsx
+|   |   +-- users/page.tsx
+|   |
+|   +-- api/                       # API routes
+|   |   +-- auth/
+|   |   +-- generate/
+|   |   +-- users/
+|   |   +-- favorites/
+|   |   +-- collections/
+|   |   +-- templates/
+|   |   +-- scheduler/
+|   |   +-- codes/
+|   |   +-- achievements/
+|   |   +-- streak/
+|   |   +-- share/
+|   |   +-- admin/
+|   |
+|   +-- share/[id]/page.tsx        # Public share pages
+|   +-- terms/page.tsx             # Terms of Service
+|   +-- privacy/page.tsx           # Privacy Policy
+|   +-- refund/page.tsx            # Refund Policy
+|   +-- page.tsx                   # Landing page
+|   +-- layout.tsx                 # Root layout
+|   +-- globals.css                # Global styles
+|
++-- components/
+|   +-- ui/                        # UI components
+|   |   +-- Button.tsx
+|   |   +-- Input.tsx
+|   |   +-- Textarea.tsx
+|   |   +-- Card.tsx
+|   |   +-- Modal.tsx
+|   |   +-- index.ts
+|   |
+|   +-- Navbar.tsx
+|   +-- Footer.tsx
+|   +-- Providers.tsx
+|
++-- models/                        # Mongoose models
+|   +-- User.ts
+|   +-- Generation.ts
+|   +-- AccessCode.ts
+|   +-- ScheduledPost.ts
+|   +-- Template.ts
+|   +-- Collection.ts
+|   +-- Favorite.ts
+|   +-- UserStreak.ts
+|   +-- UserAchievement.ts
+|   +-- SharedCard.ts
+|   +-- Setting.ts
+|   +-- index.ts
+|
++-- lib/                           # Utility libraries
+|   +-- ai.ts                      # OpenAI & YouTube
+|   +-- api.ts                     # Client API wrapper
+|   +-- auth.ts                    # Auth helpers
+|   +-- next-auth.ts               # NextAuth config
+|   +-- db.ts                      # MongoDB connection
+|   +-- achievements.ts            # Achievement system
+|   +-- rate-limit.ts              # Rate limiting
+|   +-- password.ts                # Password hashing
+|   +-- sanitize.ts                # Input sanitization
+|   +-- utils.ts                   # Utilities
+|
++-- types/                         # TypeScript types
+|   +-- index.ts
+|   +-- next-auth.d.ts
+|   +-- google-trends-api.d.ts
+|
++-- hooks/                         # React hooks
+|   +-- useAuth.ts
+|
++-- public/                        # Static assets
+|
++-- middleware.ts                  # Auth middleware
++-- package.json
++-- next.config.ts
++-- tailwind.config.ts
++-- tsconfig.json
++-- .env.example
++-- .env.local                     # Environment variables
++-- THREADN_DOCUMENTATION.txt      # This file
+
+================================================================================
+                         13. ENVIRONMENT SETUP
+================================================================================
+
+13.1 REQUIRED ENVIRONMENT VARIABLES
+-----------------------------------
+
+# OpenAI
+OPENAI_API_KEY=sk-your-openai-api-key
+
+# MongoDB
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/threadn
+
+# NextAuth
+AUTH_SECRET=your-generated-secret-key
+AUTH_URL=https://threadn.launchory.org
+
+# Public App URL
+NEXT_PUBLIC_APP_URL=https://threadn.launchory.org
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+13.2 GENERATING AUTH_SECRET
+----------------------------
+Run in terminal:
+openssl rand -base64 32
+
+13.3 GOOGLE OAUTH SETUP
+-----------------------
+1. Go to Google Cloud Console
+2. Create new project or select existing
+3. Enable Google+ API
+4. Create OAuth 2.0 credentials
+5. Add authorized redirect URIs:
+   - https://threadn.launchory.org/api/auth/callback/google
+   - http://localhost:3000/api/auth/callback/google (dev)
+
+13.4 MONGODB SETUP
+------------------
+1. Create MongoDB Atlas account
+2. Create new cluster
+3. Create database user
+4. Whitelist IP addresses (0.0.0.0/0 for all)
+5. Get connection string
+6. Replace <password> with actual password
+
+================================================================================
+                        14. PROMOTIONAL CONTENT
+================================================================================
+
+14.1 TAGLINES
+-------------
+Primary: "Stop Struggling to Write. Start Creating Viral Content."
+Alt 1: "Your AI Content Partner"
+Alt 2: "From Idea to Viral Post in Seconds"
+Alt 3: "10 Viral Hooks. One Click."
+Alt 4: "Turn Any Content into Engagement Gold"
+
+14.2 VALUE PROPOSITIONS
+-----------------------
+For Content Creators:
+"Spend less time writing, more time creating. ThreadN generates 10 viral
+hooks with virality scores in seconds, so you know exactly what will
+resonate with your audience."
+
+For YouTubers:
+"Drop any YouTube link and watch it transform into a complete social
+thread. Our AI extracts the transcript and creates platform-ready
+content automatically."
+
+For Marketers:
+"A/B test hooks with 5 emotional triggers and 5 formats. Find what
+resonates with your audience without the guesswork."
+
+For Agencies:
+"Scale your content production with templates, scheduling, and
+multi-platform formatting. Serve more clients without hiring more writers."
+
+14.3 FEATURE HIGHLIGHTS
+-----------------------
+1. AI Hook Generator
+   "10 scroll-stopping hooks, each scored 0-5 for virality potential
+   with evidence explaining why it works."
+
+2. YouTube to Content
+   "Paste any YouTube URL. We extract the transcript using 5 different
+   methods and turn it into viral threads."
+
+3. Smart Scheduling
+   "Plan your content calendar with daily and weekly recurring posts.
+   Never miss a posting schedule again."
+
+4. A/B Testing
+   "Test hooks with curiosity, fear, excitement, controversy, and
+   empathy angles. Find your winning formula."
+
+5. Multi-Platform
+   "One click formats your content for Facebook, Twitter, LinkedIn,
+   and Instagram - optimized for each platform's limits."
+
+14.4 PAIN POINT MESSAGING
+-------------------------
+BEFORE ThreadN:
+- Staring at blank screens for hours
+- Manually transcribing YouTube videos
+- Reformatting content for each platform
+- Losing your best-performing hooks
+- Inconsistent posting schedule
+- Guessing what angle will work
+- Starting from scratch every time
+- No idea what's trending
+
+AFTER ThreadN:
+- 10 viral hooks with scores in seconds
+- Auto-extract transcripts from any link
+- One-click multi-platform formatting
+- Collections, favorites, notes & tags
+- Smart scheduling with recurrence
+- A/B test 5 triggers & 5 formats
+- Reusable templates with variables
+- Google Trends built-in
+
+================================================================================
+                        15. SOCIAL MEDIA COPY
+================================================================================
+
+15.1 TWITTER/X LAUNCH THREAD
+----------------------------
+
+Tweet 1:
+Introducing ThreadN
+
+I spent 2 hours writing one social post. Now I do it in 10 seconds.
+
+Here's how you can too:
+
+Tweet 2:
+The Problem:
+
+- Great ideas, no time to write
+- YouTube videos going to waste
+- Different formats for each platform
+- No idea what hooks work
+
+Sound familiar?
+
+Tweet 3:
+The Solution: ThreadN
+
+Drop any content and get:
+- 10 viral hooks with scores
+- Complete threads ready to post
+- Multi-platform formatting
+- A/B testing to find winners
+
+Tweet 4:
+How it works:
+
+1. Paste text OR drop a YouTube link OR describe a topic
+2. AI generates 10 scored hooks
+3. Pick your favorite, add CTA
+4. Get complete thread + format for any platform
+
+Tweet 5:
+The secret sauce?
+
+Each hook comes with:
+- Virality score (0-5)
+- Reason WHY it works
+- Evidence from YOUR content
+
+No more guessing. Data-driven hooks.
+
+Tweet 6:
+But wait, there's more:
+
+- Smart scheduling (daily/weekly)
+- Reusable templates with variables
+- Collections & favorites
+- Streaks & achievements
+
+Everything to build a content habit.
+
+Tweet 7:
+Pricing that makes sense:
+
+Free: 1 thread/day
+Starter: $9/mo - 10 threads/day
+Pro: $19/mo - 25 threads + A/B testing
+Enterprise: $49/mo - 100 threads + API
+
+Start free. Upgrade when ready.
+
+Tweet 8:
+Ready to stop struggling with content?
+
+Try ThreadN free (no credit card):
+https://threadn.launchory.org
+
+Your next viral post is one click away.
+
+15.2 LINKEDIN POST
+------------------
+
+I used to spend 2 hours crafting one social media post.
+
+Last week, I created 50 posts in the same time.
+
+Here's what changed:
+
+I stopped trying to be creative from scratch.
+
+Instead, I started using AI to generate options - then picked the best one.
+
+ThreadN is my new secret weapon:
+
+1. I paste my content (or drop a YouTube link)
+2. It generates 10 viral hooks with scores
+3. I pick my favorite
+4. One click creates a complete thread
+
+But here's the real game-changer:
+
+Each hook comes with:
+- A virality score (0-5)
+- WHY it works
+- Evidence from my own content
+
+No more guessing. Data-driven content creation.
+
+The results?
+- 3x faster content creation
+- Higher engagement on every post
+- More time for actual work
+
+If you're tired of staring at blank screens, give it a try.
+
+Free to start. No credit card needed.
+
+Link in comments.
+
+#ContentCreation #AI #SocialMedia #Productivity #Marketing
+
+15.3 FACEBOOK POST
+------------------
+
+Confession time:
+
+I used to HATE creating social media content.
+
+Staring at a blank screen. Trying to be clever. Rewriting the same hook 10 times.
+
+Then I discovered something that changed everything...
+
+What if AI could generate 10 viral hooks for me - and SCORE them so I know which one will actually work?
+
+That's exactly what ThreadN does.
+
+Here's my new workflow:
+1. Paste my notes (or just drop a YouTube link)
+2. Get 10 hooks with virality scores
+3. Pick the top one
+4. Click "Build Thread" and I'm done
+
+The whole thing takes 30 seconds.
+
+And the best part? Each hook tells me WHY it works - with evidence from my own content.
+
+No more guessing. No more rewrites. Just pick and post.
+
+Try it free: https://threadn.launchory.org
+
+Your content creation just got 10x easier.
+
+15.4 INSTAGRAM CAPTION
+----------------------
+
+POV: You used to spend 2 hours writing one post.
+
+Now you do it in 30 seconds.
+
+Here's the secret:
+
+ThreadN turns ANY content into 10 viral hooks with scores.
+
+Drop a YouTube link = instant transcript
+Paste your notes = instant hooks
+Describe a topic = AI creates it all
+
+Each hook tells you:
+- Score (0-5) for virality
+- WHY it works
+- Evidence from your content
+
+Pick your favorite. Click "Build Thread."
+
+Done.
+
+Stop struggling. Start creating.
+
+Link in bio.
+
+.
+.
+.
+
+#contentcreator #socialmediamarketing #aitools #contentcreation #viralcontent #socialmediatips #marketingtips #creatoreconomy #digitalmarketing #entrepreneur #productivity #worksmarter #threadn #aiassistant #contentstrategy #growyouraudience #socialmediamanager #marketingtools #contentmarketing #createeveryday
+
+================================================================================
+                         16. LAUNCH CHECKLIST
+================================================================================
+
+PRE-LAUNCH:
+-----------
+[ ] All environment variables configured
+[ ] MongoDB database created and connected
+[ ] Google OAuth credentials set up
+[ ] OpenAI API key active
+[ ] Domain DNS configured
+[ ] SSL certificate active
+[ ] Vercel deployment working
+[ ] All pages loading correctly
+[ ] Auth flow tested (login, register, Google)
+[ ] Generation flow tested
+[ ] Scheduling tested
+[ ] Mobile responsiveness verified
+[ ] Legal pages complete (Terms, Privacy, Refund)
+
+LAUNCH DAY:
+-----------
+[ ] Final deployment to production
+[ ] Verify all features working
+[ ] Test payment flow (if applicable)
+[ ] Social media accounts ready
+[ ] Launch posts scheduled
+[ ] Email list notified
+[ ] Product Hunt submission (if planned)
+[ ] Backup created
+
+POST-LAUNCH:
+------------
+[ ] Monitor error logs
+[ ] Track user signups
+[ ] Respond to feedback
+[ ] Fix critical bugs immediately
+[ ] Collect testimonials
+[ ] Iterate on features
+
+================================================================================
+                              END OF DOCUMENTATION
+================================================================================
+
+For questions or support, contact: support@launchory.org
+
+Document Version: 1.0
+Last Updated: January 29, 2026

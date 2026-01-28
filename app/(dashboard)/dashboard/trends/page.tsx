@@ -162,19 +162,19 @@ export default function TrendsPage() {
   const getSelectedCountry = () => COUNTRIES.find(c => c.code === country);
 
   return (
-    <div className="h-full">
+    <div className="h-full font-body">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-green-400" />
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-green-400" />
             Live Trends
           </h1>
-          <p className="text-gray-400 text-sm flex items-center gap-2 mt-1">
+          <p className="text-gray-400 text-sm sm:text-base font-accent flex items-center gap-2 mt-1">
             <Clock className="w-3 h-3" />
             Real-time from Google, YouTube, Reddit & Hacker News
             {trends?.lastUpdated && (
-              <span className="text-gray-500">
+              <span className="text-gray-500 font-mono text-sm">
                 • {new Date(trends.lastUpdated).toLocaleTimeString()}
               </span>
             )}

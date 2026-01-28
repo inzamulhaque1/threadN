@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Sparkles,
   LayoutDashboard,
   Users,
   Ticket,
@@ -55,12 +55,17 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex font-body">
       {/* Sidebar */}
       <aside className="sidebar">
-        <Link href="/" className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-8 h-8 text-purple-500" />
-          <span className="text-xl font-bold text-neon-gradient">ThreadN</span>
+        <Link href="/" className="block mb-2">
+          <Image
+            src="/logo.png"
+            alt="ThreadN"
+            width={140}
+            height={40}
+            className="h-9 w-auto"
+          />
         </Link>
         <p className="text-xs text-yellow-400 mb-6 pl-1">Admin Panel</p>
 

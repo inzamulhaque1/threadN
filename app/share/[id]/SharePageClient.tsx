@@ -141,15 +141,15 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] font-body">
       {/* Header */}
       <header className="border-b border-white/10 bg-[#0a0a0f]/80 backdrop-blur-lg sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">T</span>
+              <span className="text-white font-heading font-bold text-lg">T</span>
             </div>
-            <span className="text-xl font-bold text-white">ThreadN</span>
+            <span className="text-xl font-heading font-bold text-white">ThreadN</span>
           </Link>
           <Link
             href="/dashboard/templates"
@@ -182,7 +182,7 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
 
           {/* Card Info & Actions */}
           <div className="flex flex-col overflow-visible">
-            <h1 className="text-2xl font-bold text-white mb-2">{card.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-heading font-bold text-white mb-2">{card.title}</h1>
 
             {/* Full Thread Content */}
             {card.threadBody && (

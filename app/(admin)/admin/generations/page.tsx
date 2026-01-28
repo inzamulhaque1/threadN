@@ -56,11 +56,11 @@ export default function AdminGenerationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <FileText className="w-8 h-8 text-purple-400" />
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white flex items-center gap-3">
+            <FileText className="w-7 h-7 sm:w-8 sm:h-8 text-purple-400" />
             Generations
           </h1>
-          <p className="text-gray-400 mt-1">View all AI generations</p>
+          <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">View all AI generations</p>
         </div>
 
         {/* Stats */}

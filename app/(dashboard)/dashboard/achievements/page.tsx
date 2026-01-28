@@ -129,21 +129,21 @@ export default function AchievementsPage() {
   };
 
   return (
-    <div className="h-full">
+    <div className="h-full font-body">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Achievements</h1>
-          <p className="text-gray-400 text-sm">Track your progress and earn rewards</p>
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white">Achievements</h1>
+          <p className="text-gray-400 text-sm sm:text-base font-accent mt-1">Track your progress and earn rewards</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-purple-400">{totalXP}</p>
-            <p className="text-xs text-gray-500">Total XP</p>
+            <p className="text-2xl sm:text-3xl font-mono font-bold text-purple-400">{totalXP}</p>
+            <p className="text-xs sm:text-sm text-gray-500 font-accent">Total XP</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-cyan-400">{unlockedCount}/{totalCount}</p>
-            <p className="text-xs text-gray-500">Unlocked</p>
+            <p className="text-2xl sm:text-3xl font-mono font-bold text-cyan-400">{unlockedCount}/{totalCount}</p>
+            <p className="text-xs sm:text-sm text-gray-500 font-accent">Unlocked</p>
           </div>
         </div>
       </div>
@@ -166,32 +166,32 @@ export default function AchievementsPage() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Streak Card */}
           <div className="lg:col-span-3">
-            <Card className="p-6 bg-gradient-to-br from-orange-500/10 to-red-500/5 border-orange-500/20">
-              <div className="flex items-center justify-between">
+            <Card className="p-4 sm:p-6 bg-gradient-to-br from-orange-500/10 to-red-500/5 border-orange-500/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-orange-500/20 flex items-center justify-center">
-                    <Flame className={`w-8 h-8 ${streak?.isActive ? "text-orange-400 animate-pulse" : "text-gray-500"}`} />
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-orange-500/20 flex items-center justify-center">
+                    <Flame className={`w-7 h-7 sm:w-8 sm:h-8 ${streak?.isActive ? "text-orange-400 animate-pulse" : "text-gray-500"}`} />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold text-white">
-                      {streak?.currentStreak || 0}
-                      <span className="text-lg text-gray-400 ml-2">day streak</span>
+                    <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white">
+                      <span className="font-mono">{streak?.currentStreak || 0}</span>
+                      <span className="text-base sm:text-lg text-gray-400 ml-2 font-accent">day streak</span>
                     </h2>
-                    <p className="text-gray-400">
+                    <p className="text-gray-400 text-sm sm:text-base font-accent">
                       {streak?.isActive
                         ? "Keep it going! Generate content today."
                         : "Start a new streak by generating content today!"}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-8 text-center">
+                <div className="flex items-center gap-6 sm:gap-8 text-center">
                   <div>
-                    <p className="text-2xl font-bold text-orange-400">{streak?.longestStreak || 0}</p>
-                    <p className="text-xs text-gray-500">Longest Streak</p>
+                    <p className="text-xl sm:text-2xl font-mono font-bold text-orange-400">{streak?.longestStreak || 0}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 font-accent">Longest Streak</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-cyan-400">{streak?.totalDaysActive || 0}</p>
-                    <p className="text-xs text-gray-500">Total Days Active</p>
+                    <p className="text-xl sm:text-2xl font-mono font-bold text-cyan-400">{streak?.totalDaysActive || 0}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 font-accent">Total Days Active</p>
                   </div>
                 </div>
               </div>

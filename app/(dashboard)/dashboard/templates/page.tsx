@@ -527,12 +527,15 @@ export default function TemplatesPage() {
 
   // Sharing
   const [isSharing, setIsSharing] = useState(false);
+  const [isUpdatingShare, setIsUpdatingShare] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareId, setShareId] = useState<string | null>(null);
   const [showShareDrawer, setShowShareDrawer] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
   const [lastSharedContent, setLastSharedContent] = useState<string | null>(null);
   const [showInstagramToast, setShowInstagramToast] = useState(false);
+  const [shareUpdateSuccess, setShareUpdateSuccess] = useState(false);
 
   // Preview dimensions
   const previewMaxWidth = 400;
@@ -887,6 +890,7 @@ export default function TemplatesPage() {
 
       if (data.success) {
         setShareUrl(data.data.shareUrl);
+        setShareId(data.data.shareId);
         setLastSharedContent(currentContent);
       } else {
         alert(data.error || "Failed to create share link");
@@ -897,6 +901,63 @@ export default function TemplatesPage() {
     }
 
     setIsSharing(false);
+    setSelectedId(prevSelected);
+  };
+
+  // Update existing share
+  const updateShare = async () => {
+    if (!cardRef.current || !shareId) return;
+
+    const prevSelected = selectedId;
+    setSelectedId(null);
+    setIsUpdatingShare(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    try {
+      const exportScale = selectedSize.width / cardRef.current.offsetWidth;
+      const imageData = await toPng(cardRef.current, {
+        width: selectedSize.width,
+        height: selectedSize.height,
+        style: {
+          transform: `scale(${exportScale})`,
+          transformOrigin: "top left",
+        },
+        pixelRatio: 1,
+      });
+
+      const hookElement = elements.find((el) => el.id === "hook-text");
+      const title = hookElement?.content?.split("\n")[0] || "My Content Card";
+      const description = selectedThread?.body?.slice(0, 200) || "";
+      const threadBody = selectedThread?.body || "";
+
+      const res = await fetch(`/api/share/${shareId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageData,
+          title,
+          description,
+          threadBody,
+          templateName: selectedTemplate.name,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setLastSharedContent(getContentHash());
+        setShareUpdateSuccess(true);
+        setTimeout(() => setShareUpdateSuccess(false), 3000);
+      } else {
+        alert(data.error || "Failed to update share");
+      }
+    } catch (err) {
+      console.error("Update share failed:", err);
+      alert("Failed to update share. Please try again.");
+    }
+
+    setIsUpdatingShare(false);
     setSelectedId(prevSelected);
   };
 
@@ -1945,14 +2006,34 @@ export default function TemplatesPage() {
                     {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
-                <button
-                  onClick={generateShareLink}
-                  disabled={isSharing}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white transition"
-                >
-                  {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-                  Generate New Link
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={updateShare}
+                    disabled={isUpdatingShare || isSharing}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${
+                      shareUpdateSuccess
+                        ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                        : "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
+                    } disabled:opacity-50`}
+                  >
+                    {isUpdatingShare ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : shareUpdateSuccess ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                    {shareUpdateSuccess ? "Updated!" : "Save Changes"}
+                  </button>
+                  <button
+                    onClick={generateShareLink}
+                    disabled={isSharing || isUpdatingShare}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-gray-400 hover:text-white transition disabled:opacity-50"
+                  >
+                    {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                    New
+                  </button>
+                </div>
               </div>
             )}
           </div>

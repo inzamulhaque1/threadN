@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { Button, Card, Input, Textarea } from "@/components/ui";
 import { toPng, toJpeg } from "html-to-image";
+import { useSession } from "next-auth/react";
 import { userApi } from "@/lib/api";
 
 // Template Categories
@@ -445,9 +446,11 @@ interface RecentThread {
 }
 
 export default function TemplatesPage() {
+  const { data: session } = useSession();
   const cardRef = useRef<HTMLDivElement>(null);
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const contentImageInputRef = useRef<HTMLInputElement>(null);
+  const [authorInitialized, setAuthorInitialized] = useState(false);
 
   // Canvas elements
   const [elements, setElements] = useState<CanvasElement[]>([
@@ -478,6 +481,20 @@ export default function TemplatesPage() {
       color: "#8b5cf6",
     },
   ]);
+
+  // Set author name from session
+  useEffect(() => {
+    if (session?.user?.name && !authorInitialized) {
+      setElements((prev) =>
+        prev.map((el) =>
+          el.id === "author-text"
+            ? { ...el, content: `@${session.user.name.replace(/\s+/g, "").toLowerCase()}` }
+            : el
+        )
+      );
+      setAuthorInitialized(true);
+    }
+  }, [session, authorInitialized]);
 
   // Decorations from template
   const [decorations, setDecorations] = useState<Decoration[]>(CARD_TEMPLATES[0].decorations || []);

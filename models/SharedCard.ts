@@ -6,7 +6,8 @@ export interface ISharedCard {
   userId: string | null; // null for anonymous shares
   imageData: string; // base64 encoded image
   title: string;
-  description: string;
+  description: string; // short description for OG meta
+  threadBody: string; // full thread content
   templateName: string;
   views: number;
   createdAt: Date;
@@ -41,6 +42,10 @@ const SharedCardSchema = new Schema<ISharedCardDocument>(
       type: String,
       default: "",
       maxlength: 500,
+    },
+    threadBody: {
+      type: String,
+      default: "",
     },
     templateName: {
       type: String,

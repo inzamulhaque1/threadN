@@ -532,6 +532,7 @@ export default function TemplatesPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
   const [lastSharedContent, setLastSharedContent] = useState<string | null>(null);
+  const [showInstagramToast, setShowInstagramToast] = useState(false);
 
   // Preview dimensions
   const previewMaxWidth = 400;
@@ -867,7 +868,8 @@ export default function TemplatesPage() {
 
       const hookElement = elements.find((el) => el.id === "hook-text");
       const title = hookElement?.content?.split("\n")[0] || "My Content Card";
-      const description = selectedThread?.body?.slice(0, 200) || "";
+      const description = selectedThread?.body?.slice(0, 200) || ""; // Short for OG meta
+      const threadBody = selectedThread?.body || ""; // Full content
 
       const res = await fetch("/api/share", {
         method: "POST",
@@ -876,6 +878,7 @@ export default function TemplatesPage() {
           imageData,
           title,
           description,
+          threadBody,
           templateName: selectedTemplate.name,
         }),
       });
@@ -1985,7 +1988,8 @@ export default function TemplatesPage() {
                 <button
                   onClick={async () => {
                     await handleCopyToClipboard();
-                    alert("Image copied to clipboard!\n\nInstagram doesn't support direct sharing from web.\n\nOpen Instagram app on your phone and paste the image there.");
+                    setShowInstagramToast(true);
+                    setTimeout(() => setShowInstagramToast(false), 5000);
                   }}
                   className="flex flex-col items-center justify-center gap-1 p-3 bg-white/5 hover:bg-gradient-to-br hover:from-[#833AB4]/20 hover:via-[#FD1D1D]/20 hover:to-[#F77737]/20 border border-white/10 hover:border-pink-500/30 rounded-xl transition group"
                 >
@@ -2080,6 +2084,34 @@ export default function TemplatesPage() {
                 Note: Facebook & LinkedIn previews only work with deployed URLs
               </p>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Instagram Toast */}
+      <div
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 ${
+          showInstagramToast ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+        }`}
+      >
+        <div className="bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-[1px] rounded-2xl shadow-2xl shadow-pink-500/20">
+          <div className="bg-[#12121a] rounded-2xl px-6 py-4 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] flex items-center justify-center flex-shrink-0">
+              <Instagram className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-white font-medium mb-1">Image Copied!</p>
+              <p className="text-gray-400 text-sm">
+                Instagram doesn't support direct web sharing.<br />
+                Open the Instagram app and paste your image.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowInstagramToast(false)}
+              className="text-gray-500 hover:text-white transition ml-2"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>

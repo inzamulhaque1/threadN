@@ -9,6 +9,7 @@ const CreateShareSchema = z.object({
   imageData: z.string().min(1, "Image data is required"),
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
   description: z.string().max(500, "Description too long").optional().default(""),
+  threadBody: z.string().optional().default(""),
   templateName: z.string().optional().default(""),
 });
 
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { imageData, title, description, templateName } = validation.data;
+    const { imageData, title, description, threadBody, templateName } = validation.data;
 
     // Generate unique ID for the share link
     const uniqueId = nanoid(10);
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
       imageData,
       title,
       description,
+      threadBody,
       templateName,
       views: 0,
     });

@@ -9,6 +9,7 @@ interface SharedCardData {
   imageData: string;
   title: string;
   description: string;
+  threadBody: string;
   templateName: string;
   views: number;
   createdAt: string;
@@ -182,11 +183,19 @@ export default function SharePageClient({ shareId }: SharePageClientProps) {
           {/* Card Info & Actions */}
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold text-white mb-2">{card.title}</h1>
-            {card.description && (
-              <p className="text-gray-400 mb-6">{card.description}</p>
+
+            {/* Full Thread Content */}
+            {card.threadBody && (
+              <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                <p className="text-sm text-gray-400 mb-2">Thread Content:</p>
+                <p className="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
+                  {card.threadBody}
+                </p>
+              </div>
             )}
+
             {card.templateName && (
-              <p className="text-sm text-purple-400 mb-6">Template: {card.templateName}</p>
+              <p className="text-sm text-purple-400 mb-4">Template: {card.templateName}</p>
             )}
 
             {/* Download Button */}

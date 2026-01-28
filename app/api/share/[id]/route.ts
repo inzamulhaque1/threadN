@@ -35,6 +35,7 @@ export async function GET(
           imageData: sharedCard.imageData,
           title: sharedCard.title,
           description: sharedCard.description,
+          threadBody: sharedCard.threadBody || "",
           templateName: sharedCard.templateName,
           views: sharedCard.views + 1,
           createdAt: sharedCard.createdAt,
